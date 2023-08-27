@@ -57,7 +57,7 @@ except ImportError as e:
 
 MSG_NEEDS_FW_UPDATE_GENERIC = _('Firmware version too old. Please update at') + \
     ' https://www.ledger.com'
-MSG_NEEDS_FW_UPDATE_SEGWIT = _('Firmware version (or "Bitcoin" app) too old for Segwit support. Please update at') + \
+MSG_NEEDS_FW_UPDATE_SEGWIT = _('Firmware version (or "Litecoin" app) too old for Segwit support. Please update at') + \
     ' https://www.ledger.com'
 MULTI_OUTPUT_SUPPORT = '1.1.4'
 SEGWIT_SUPPORT = '1.1.10'
@@ -140,7 +140,7 @@ def test_pin_unlocked(func):
         except OSError as e:
             _logger.exception('')
             raise UserFacingException(
-                _('Communication with Ledger failed. Open the Bitcoin app and try again.') + f'\n{str(e)}',
+                _('Communication with Ledger failed. Open the Litecoin app and try again.') + f'\n{str(e)}',
             )
     return catch_exception
 
@@ -245,14 +245,14 @@ def get_bip44_purpose(addrtype: 'AddressType') -> int:
 
 def get_bip44_chain(chain: 'Chain') -> int:
     """
-    Determine the BIP 44 coin type based on the Bitcoin chain type.
+    Determine the BIP 44 coin type based on the Litecoin chain type.
 
-    For the Bitcoin mainnet chain, this returns 0. For the other chains, this returns 1.
+    For the Litecoin mainnet chain, this returns 2. For the other chains, this returns 1.
 
     :param chain: The chain
     """
     if chain == Chain.MAIN:
-        return 0
+        return 2
     else:
         return 1
 
@@ -329,7 +329,7 @@ class Ledger_Client(HardwareClientBase, ABC):
         except (ledger_bitcoin.exception.errors.InsNotSupportedError,
                 ledger_bitcoin.exception.errors.ClaNotSupportedError) as e:
             # This can happen on very old versions.
-            # E.g. with a "nano s", with bitcoin app 1.1.10, SE 1.3.1, MCU 1.0,
+            # E.g. with a "nano s", with Litecoin app 1.1.10, SE 1.3.1, MCU 1.0,
             #      - on machine one, ghost43 got InsNotSupportedError
             #      - on machine two, thomasv got ClaNotSupportedError
             #      unclear why the different exceptions, ledger_bitcoin version 0.2.1 in both cases
@@ -477,7 +477,7 @@ class Ledger_Client_Legacy(Ledger_Client):
     @test_pin_unlocked
     def get_xpub(self, bip32_path, xtype):
         self.checkDevice()
-        # bip32_path is of the form 44'/0'/1'
+        # bip32_path is of the form 44'/2'/1'
         # S-L-O-W - we don't handle the fingerprint directly, so compute
         # it manually from the previous node
         # This only happens once so it's bearable
