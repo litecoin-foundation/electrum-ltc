@@ -52,10 +52,6 @@ TRAMPOLINE_NODES_TESTNET = {
 
 TRAMPOLINE_NODES_TESTNET4 = {}
 
-TRAMPOLINE_NODES_SIGNET = {
-    'eclair wakiyamap.dev': LNPeerAddr(host='signet-eclair.wakiyamap.dev', port=9735, pubkey=bytes.fromhex('0271cf3881e6eadad960f47125434342e57e65b98a78afa99f9b4191c02dd7ab3b')),
-}
-
 _TRAMPOLINE_NODES_UNITTESTS = {}  # used in unit tests
 
 TRAMPOLINE_HOPS_MAX_DATA_SIZE = 500
@@ -109,8 +105,6 @@ def hardcoded_trampoline_nodes() -> Mapping[str, LNPeerAddr]:
         return TRAMPOLINE_NODES_TESTNET
     elif constants.net.NET_NAME == "testnet4":
         return TRAMPOLINE_NODES_TESTNET4
-    elif constants.net.NET_NAME == "signet":
-        return TRAMPOLINE_NODES_SIGNET
     else:
         return {}
 

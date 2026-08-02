@@ -300,8 +300,6 @@ def get_chain() -> 'Chain':
         return Chain.MAIN
     elif constants.net.NET_NAME == "testnet":
         return Chain.TEST
-    elif constants.net.NET_NAME == "signet":
-        return Chain.SIGNET
     elif constants.net.NET_NAME == "regtest":
         return Chain.REGTEST
     else:
@@ -1405,4 +1403,3 @@ class LedgerPlugin(HW_PluginBase):
             },
         }
         wizard.navmap_merge(views)
-
