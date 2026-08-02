@@ -90,10 +90,8 @@ class BaseCrashReporter(Logger):
     def send_report(self, asyncio_loop, proxy: 'ProxySettings', *, timeout=None) -> CrashReportResponse:
         # FIXME the caller needs to catch generic "Exception", as this method does not have a well-defined API...
         bitcoinlike_genesis = constants.net.GENESIS[-4:] in [
-            "e26f",  # mainnet
-            "4943",  # testnet 3
-            "f043",  # testnet 4
-            "1ef6",  # signet
+            "bfe2",  # mainnet
+            "29a0",  # testnet 4
         ]
         is_forked_codebase = not bitcoinlike_genesis or "/litecoin-foundation/" not in constants.GIT_REPO_URL
         if is_forked_codebase and ".electrum-ltc.org" in BaseCrashReporter.report_server:
