@@ -872,7 +872,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         if d:
             self.show_send_tab()
             host = self.network.get_parameters().server.host
-            self.handle_payment_identifier('bitcoin:%s?message=donation for %s' % (d, host))
+            self.handle_payment_identifier('litecoin:%s?message=donation for %s' % (d, host))
         else:
             self.show_error(_('No donation address for this server'))
 

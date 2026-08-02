@@ -347,9 +347,9 @@ class Request(BaseInvoice):
             extra['time'] = str(int(self.time))
             extra['exp'] = str(int(self.exp))
         if lightning_invoice:
-            extra['lightning'] = lightning_invoice
+            extra['lightningltc'] = lightning_invoice
         if not addr and lightning_invoice:
-            return "bitcoin:?lightning="+lightning_invoice
+            return "litecoin:?lightningltc=" + lightning_invoice
         if not addr and not lightning_invoice:
             return None
         uri = create_bip21_uri(addr, amount, message, extra_query_params=extra)

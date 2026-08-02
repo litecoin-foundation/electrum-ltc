@@ -260,8 +260,8 @@ class PaymentIdentifier(Logger):
                 return
             self.bip21 = out
             self._type = PaymentIdentifierType.BIP21
-            # check optional lightning in bip21, set self.bolt11 if valid
-            bolt11 = out.get('lightning')
+            # check optional Lightning invoice in BIP21, set self.bolt11 if valid
+            bolt11 = out.get('lightningltc')
             if bolt11:
                 try:
                     self.bolt11 = Invoice.from_bech32(bolt11)

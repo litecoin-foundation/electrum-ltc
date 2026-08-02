@@ -32,7 +32,7 @@ def parse_bip21_URI(uri: str) -> dict:
 
     if ':' not in uri:
         if not bitcoin.is_address(uri):
-            raise InvalidBitcoinURI("Not a bitcoin address")
+            raise InvalidBitcoinURI("Not a litecoin address")
         return {'address': uri}
 
     try:
@@ -41,7 +41,7 @@ def parse_bip21_URI(uri: str) -> dict:
         raise InvalidBitcoinURI("failed to parse uri") from e
 
     if u.scheme.lower() != BITCOIN_BIP21_URI_SCHEME:
-        raise InvalidBitcoinURI("Not a bitcoin URI")
+        raise InvalidBitcoinURI("Not a litecoin URI")
     address = u.path
 
     # python for android fails to parse query
@@ -61,7 +61,7 @@ def parse_bip21_URI(uri: str) -> dict:
     out = {k: v[0] for k, v in pq.items()}
     if address:
         if not bitcoin.is_address(address):
-            raise InvalidBitcoinURI(f"Invalid bitcoin address: {address}")
+            raise InvalidBitcoinURI(f"Invalid litecoin address: {address}")
         out['address'] = address
     if 'amount' in out:
         am = out['amount']
@@ -73,7 +73,7 @@ def parse_bip21_URI(uri: str) -> dict:
             else:
                 amount = Decimal(am) * COIN
             if amount > TOTAL_COIN_SUPPLY_LIMIT_IN_BTC * COIN or amount <= 0:
-                raise InvalidBitcoinURI(f"amount is out-of-bounds: {amount!r} BTC")
+                raise InvalidBitcoinURI(f"amount is out-of-bounds: {amount!r} LTC")
             out['amount'] = int(amount)
         except Exception as e:
             raise InvalidBitcoinURI(f"failed to parse 'amount' field: {repr(e)}") from e
@@ -95,11 +95,11 @@ def parse_bip21_URI(uri: str) -> dict:
             out['sig'] = bitcoin.base_decode(out['sig'], base=58).hex()
         except Exception as e:
             raise InvalidBitcoinURI(f"failed to parse 'sig' field: {repr(e)}") from e
-    if 'lightning' in out:
+    if 'lightningltc' in out:
         try:
-            lnaddr = decode_bolt11_invoice(out['lightning'])
+            lnaddr = decode_bolt11_invoice(out['lightningltc'])
         except BOLT11InvoiceException as e:
-            raise InvalidBitcoinURI(f"Failed to decode 'lightning' field: {e!r}") from e
+            raise InvalidBitcoinURI(f"Failed to decode 'lightningltc' field: {e!r}") from e
         amount_sat = out.get('amount')
         if amount_sat:
             # allow small leeway due to msat precision
