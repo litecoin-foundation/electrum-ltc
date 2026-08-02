@@ -167,29 +167,29 @@ class TestChannel(ElectrumTestCase):
         if not alice_channel.has_anchors():
             # ctx outputs are ordered by increasing amounts
             low_amt_idx = 0
-            assert len(alice_out[low_amt_idx].address) == 62  # p2wsh
+            assert len(alice_out[low_amt_idx].address) == 63  # p2wsh
             high_amt_idx = 1
-            assert len(alice_out[high_amt_idx].address) == 42  # p2wpkh
+            assert len(alice_out[high_amt_idx].address) == 43  # p2wpkh
         else:
             # using anchor outputs, all outputs are p2wsh
             low_amt_idx = 2
-            assert len(alice_out[low_amt_idx].address) == 62
+            assert len(alice_out[low_amt_idx].address) == 63
             high_amt_idx = 3
-            assert len(alice_out[high_amt_idx].address) == 62
+            assert len(alice_out[high_amt_idx].address) == 63
         self.assertLess(alice_out[low_amt_idx].value, 5 * 10**8, alice_out)
         self.assertEqual(alice_out[high_amt_idx].value, 5 * 10**8, alice_out)
 
         alice_out = alice_channel.get_latest_commitment(REMOTE).outputs()
         if not alice_channel.has_anchors():
             low_amt_idx = 0
-            assert len(alice_out[low_amt_idx].address) == 42
+            assert len(alice_out[low_amt_idx].address) == 43
             high_amt_idx = 1
-            assert len(alice_out[high_amt_idx].address) == 62
+            assert len(alice_out[high_amt_idx].address) == 63
         else:
             low_amt_idx = 2
-            assert len(alice_out[low_amt_idx].address) == 62
+            assert len(alice_out[low_amt_idx].address) == 63
             high_amt_idx = 3
-            assert len(alice_out[high_amt_idx].address) == 62
+            assert len(alice_out[high_amt_idx].address) == 63
         self.assertLess(alice_out[low_amt_idx].value, 5 * 10**8)
         self.assertEqual(alice_out[high_amt_idx].value, 5 * 10**8)
 

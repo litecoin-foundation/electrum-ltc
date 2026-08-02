@@ -28,7 +28,7 @@ class TestCoinChooser(ElectrumTestCase):
     @staticmethod
     def get_dummy_txout_1(amount: Optional[int] = 1000000) -> PartialTxOutput:
         output = PartialTxOutput.from_address_and_value(
-            address="bc1q2089yvkkyw7yq7m6a7lxt45n35c587hk4sgj7c",
+            address="ltc1q2089yvkkyw7yq7m6a7lxt45n35c587hk3vjkxg",
             value=amount,
         )
         return output
@@ -64,7 +64,7 @@ class TestCoinChooser(ElectrumTestCase):
             coins=[coin],
             inputs=[single_txin],
             outputs=[],
-            change_addrs=["bc1q2089yvkkyw7yq7m6a7lxt45n35c587hk4sgj7c"],
+            change_addrs=["ltc1q2089yvkkyw7yq7m6a7lxt45n35c587hk3vjkxg"],
             fee_estimator_vb=fee_estimator,
             dust_threshold=500,
         )
@@ -83,7 +83,7 @@ class TestCoinChooser(ElectrumTestCase):
             coins=[coin],
             inputs=[single_txin],
             outputs=[],
-            change_addrs=["bc1q2089yvkkyw7yq7m6a7lxt45n35c587hk4sgj7c"],
+            change_addrs=["ltc1q2089yvkkyw7yq7m6a7lxt45n35c587hk3vjkxg"],
             fee_estimator_vb=fee_estimator,
             dust_threshold=500,
         )

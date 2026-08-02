@@ -101,7 +101,7 @@ class TestTypes(QETestCase):
     @qt_test
     def test_qeamount_frominvoice(self):
         amount_sat = 10_000
-        outputs = [PartialTxOutput.from_address_and_value('bc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqp8p2293', amount_sat)]
+        outputs = [PartialTxOutput.from_address_and_value('ltc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqpraswap', amount_sat)]
         invoice = Invoice(
             amount_msat=amount_sat * 1000,
             message="mymsg",
@@ -116,7 +116,7 @@ class TestTypes(QETestCase):
         self.assertEqual(10_000_000, a.msatsInt)
         self.assertFalse(a.isMax)
 
-        outputs = [PartialTxOutput.from_address_and_value('bc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqp8p2293', '!')]
+        outputs = [PartialTxOutput.from_address_and_value('ltc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqpraswap', '!')]
         invoice = Invoice(
             amount_msat='!',
             message="mymsg",
@@ -131,7 +131,7 @@ class TestTypes(QETestCase):
         self.assertEqual(0, a.satsInt)
         self.assertEqual(0, a.msatsInt)
 
-        bolt11 = 'lnbc241ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygshp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqs9qrss2f8kr98446xls02yndup2ynwjh46u8kdeuuncexx2hnets0j0064nyq25gkd6jnttldzt5qqtszum5dufvuvryxt204w2p24557udxgcp0nlwtw'
+        bolt11 = 'lnltc241ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygshp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqs9qrss2q90trpgcmhjq7lyv9dgu5dtc5uu3jk6a052fpx4ma4awff4u57sp2947rxwhn00sqqxlnnnhkqpfnm3ep73ur0rrhsemcys9v77q0fsqchjpv2'
         invoice = Invoice.from_bech32(bolt11)
         a = QEAmount(from_invoice=invoice)
         self.assertEqual(2_400_000_000, a.satsInt)

@@ -228,7 +228,7 @@ class TestBaseInvoice(ElectrumTestCase):
 
     async def test_arg_validation(self):
         amount_sat = 10_000
-        outputs = [PartialTxOutput.from_address_and_value("tb1qmjzmg8nd4z56ar4fpngzsr6euktrhnjg9td385", amount_sat)]
+        outputs = [PartialTxOutput.from_address_and_value("tltc1qmjzmg8nd4z56ar4fpngzsr6euktrhnjgur00ha", amount_sat)]
         invoice = Invoice(
             amount_msat=amount_sat * 1000,
             message="mymsg",
@@ -265,9 +265,9 @@ class TestBaseInvoice(ElectrumTestCase):
         # TestStorageUpgrade.test_upgrade_removes_invoice_with_malformed_route_tag.
         # The string below is a correctly signed testnet invoice whose 'r' payload has
         # non-zero padding bits; see TestBolt11._encode_invoice_with_raw_tag.
-        invoice_str = ('lntb1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq8w3jhxaqrqzq'
-                       'pxhlj48td8uen6qqvke0kwsx0uf3g9pqfg3sdetumr2lla597ahcjcqcn5v7yycysc39ua9r2l8qx527'
-                       'uthxfdgmhp47exeh98pv7facqmjed87')
+        invoice_str = ('lntltc1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq8w3jhxaqrqzqpg'
+                       '5autgkssysex4f6x5qzr8ryt2vaul2grpyuzfxzcdqfa56qa355yekjj40etdn9tyfxxlerhalx38pngefsdp'
+                       'ut5n0lzc0jqzl428qqrxargp')
         with self.assertRaisesRegex(BOLT11DecodeException, "Failed to decode tag 'r'"):
             Invoice(
                 amount_msat=None,
@@ -314,7 +314,7 @@ class TestOutgoingInvoicesPaidCache(ElectrumTestCase):
 
     async def test_paid_keys_empty_for_fresh_unpaid_invoice(self):
         wallet = self._make_wallet()
-        inv = self._make_outgoing_invoice("tb1qmjzmg8nd4z56ar4fpngzsr6euktrhnjg9td385", 5_000)
+        inv = self._make_outgoing_invoice("tltc1qmjzmg8nd4z56ar4fpngzsr6euktrhnjgur00ha", 5_000)
         wallet.save_invoice(inv, write_to_disk=False)
         self.assertNotIn(inv.get_id(), wallet._paid_invoice_keys_cache)
         self.assertEqual(PR_UNPAID, wallet.get_invoice_status(inv))
@@ -322,7 +322,7 @@ class TestOutgoingInvoicesPaidCache(ElectrumTestCase):
 
     async def test_paid_keys_populated_when_invoice_gets_paid(self):
         wallet = self._make_wallet()
-        dest = "tb1qmjzmg8nd4z56ar4fpngzsr6euktrhnjg9td385"
+        dest = "tltc1qmjzmg8nd4z56ar4fpngzsr6euktrhnjgur00ha"
         amount_sat = 5_000
         inv = self._make_outgoing_invoice(dest, amount_sat)
         wallet.save_invoice(inv, write_to_disk=False)
@@ -339,7 +339,7 @@ class TestOutgoingInvoicesPaidCache(ElectrumTestCase):
 
     async def test_paid_keys_removed_on_delete_and_clear(self):
         wallet = self._make_wallet()
-        inv = self._make_outgoing_invoice("tb1qmjzmg8nd4z56ar4fpngzsr6euktrhnjg9td385", 5_000)
+        inv = self._make_outgoing_invoice("tltc1qmjzmg8nd4z56ar4fpngzsr6euktrhnjgur00ha", 5_000)
         wallet.save_invoice(inv, write_to_disk=False)
         # Force into the cache via the internal hook so we don't depend on the slow path here.
         wallet._paid_invoice_keys_cache.add(inv.get_id())
@@ -353,7 +353,7 @@ class TestOutgoingInvoicesPaidCache(ElectrumTestCase):
 
     async def test_get_invoice_status_short_circuits_on_cache_hit(self):
         wallet = self._make_wallet()
-        inv = self._make_outgoing_invoice("tb1qmjzmg8nd4z56ar4fpngzsr6euktrhnjg9td385", 5_000)
+        inv = self._make_outgoing_invoice("tltc1qmjzmg8nd4z56ar4fpngzsr6euktrhnjgur00ha", 5_000)
         wallet.save_invoice(inv, write_to_disk=False)
         # Seed the cache and assert the slow path is not taken.
         wallet._paid_invoice_keys_cache.add(inv.get_id())
@@ -368,7 +368,7 @@ class TestOutgoingInvoicesPaidCache(ElectrumTestCase):
 
     async def test_set_broadcasting_skips_already_paid_invoices(self):
         wallet = self._make_wallet()
-        dest = "tb1qmjzmg8nd4z56ar4fpngzsr6euktrhnjg9td385"
+        dest = "tltc1qmjzmg8nd4z56ar4fpngzsr6euktrhnjgur00ha"
         # Two invoices share the same output scriptpubkey but only one is unpaid.
         inv_paid = self._make_outgoing_invoice(dest, 5_000, t=1700000000)
         inv_unpaid = self._make_outgoing_invoice(dest, 5_000, t=1700000005)
@@ -400,7 +400,7 @@ class TestOutgoingInvoicesPaidCache(ElectrumTestCase):
         output scriptpubkey, so a new tx paying that scriptpubkey touches all of them.
         set_broadcasting must not call _is_onchain_invoice_paid for the paid ones."""
         wallet = self._make_wallet()
-        dest = "tb1qmjzmg8nd4z56ar4fpngzsr6euktrhnjg9td385"
+        dest = "tltc1qmjzmg8nd4z56ar4fpngzsr6euktrhnjgur00ha"
         # Many paid invoices, all sharing the same destination scriptpubkey.
         paid_ids = set()
         for i in range(50):
@@ -437,7 +437,7 @@ class TestOutgoingInvoicesPaidCache(ElectrumTestCase):
         should reflect what _is_onchain_invoice_paid found, so that subsequent
         get_invoice_status calls take the fast path."""
         wallet = self._make_wallet()
-        dest = "tb1qmjzmg8nd4z56ar4fpngzsr6euktrhnjg9td385"
+        dest = "tltc1qmjzmg8nd4z56ar4fpngzsr6euktrhnjgur00ha"
         amount_sat = 5_000
         inv = self._make_outgoing_invoice(dest, amount_sat)
         wallet.save_invoice(inv, write_to_disk=False)
@@ -457,7 +457,7 @@ class TestOutgoingInvoicesPaidCache(ElectrumTestCase):
         """A reorg unverifying the paying tx must remove the invoice from the cache,
         otherwise get_invoice_status would keep returning a stale PR_PAID."""
         wallet = self._make_wallet()
-        dest = "tb1qmjzmg8nd4z56ar4fpngzsr6euktrhnjg9td385"
+        dest = "tltc1qmjzmg8nd4z56ar4fpngzsr6euktrhnjgur00ha"
         amount_sat = 5_000
         inv = self._make_outgoing_invoice(dest, amount_sat)
         wallet.save_invoice(inv, write_to_disk=False)
@@ -480,7 +480,7 @@ class TestOutgoingInvoicesPaidCache(ElectrumTestCase):
         """clear_history() wipes _prevouts_by_scripthash; the cache must follow,
         otherwise get_invoice_status would keep returning a stale PR_PAID."""
         wallet = self._make_wallet()
-        dest = "tb1qmjzmg8nd4z56ar4fpngzsr6euktrhnjg9td385"
+        dest = "tltc1qmjzmg8nd4z56ar4fpngzsr6euktrhnjgur00ha"
         amount_sat = 5_000
         inv = self._make_outgoing_invoice(dest, amount_sat)
         wallet.save_invoice(inv, write_to_disk=False)

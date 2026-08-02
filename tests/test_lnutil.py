@@ -1045,7 +1045,7 @@ class TestLNUtil(ElectrumTestCase):
         self.assertFalse(f1.supports(LnFeatures.OPTION_TRAMPOLINE_ROUTING_REQ_ELECTRUM))
 
     def test_lnworker_decode_channel_update_msg(self):
-        msg_without_prefix = bytes.fromhex("439b71c8ddeff63004e4ff1f9764a57dcf20232b79d9d669aef0e31c42be8e44208f7d868d0133acb334047f30e9399dece226ccd98e5df5330adf7f356290516fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d619000000000008762700054a00005ef2cf9c0101009000000000000003e80000000000000001000000002367b880")
+        msg_without_prefix = bytes.fromhex("641a55552165dc40d2a1f62423eb741a007dca9ceb1c701d4aec03ed5b1eae873b90e601c86c12b197cc3c37f9a519caa224d4fe9ab746e01541e0f08684eb44e2bf047e7e5a191aa4ef34d314979dc9986e0f19251edaba5940fd1fe365a71208762700054a00005ef2cf9c0101009000000000000003e80000000000000001000000002367b880")
         # good messages
         self.assertNotEqual(
             None,
@@ -1112,7 +1112,7 @@ class TestLNUtil(ElectrumTestCase):
 
     @as_testnet
     async def test_decode_imported_channel_backup_v0(self):
-        encrypted_cb = "channel_backup:Adn87xcGIs9H2kfp4VpsOaNKWCHX08wBoqq37l1cLYKGlJamTeoaLEwpJA81l1BXF3GP/mRxqkY+whZG9l51G8izIY/kmMSvnh0DOiZEdwaaT/1/MwEHfsEomruFqs+iW24SFJPHbMM7f80bDtIxcLfZkKmgcKBAOlcqtq+dL3U3yH74S8BDDe2L4snaxxpCjF0JjDMBx1UR/28D+QlIi+lbvv1JMaCGXf+AF1+3jLQf8+lVI+rvFdyArws6Ocsvjf+ANQeSGUwW6Nb2xICQcMRgr1DO7bO4pgGu408eYRr2v3ayJBVtnKwSwd49gF5SDSjTDAO4CCM0uj9H5RxyzH7fqotkd9J80MBr84RiBXAeXKz+Ap8608/FVqgQ9BOcn6LhuAQdE5zXpmbQyw5jUGkPvHuseR+rzthzncy01odUceqTNg=="
+        encrypted_cb = "channel_backup:AUX6JOQHraTJEhh8Uq2fyd95KctRlb9dn8Kx+h39uYNDq4azsEh21N5zMjwa3b8W98iaKHTNxoE/aPogRW6DJEIfb93d4pj9TZdLHA7/1Ee3PP9AldeXyrBK9bU/HJaoPeuiXFD8fuV00W8AAZjpYumKVP1B8JQ/dQFg09uqKBrKkR4OGoq5ABduYKY68CuVg20wjd8d3wONiRS8OaCAuCC1n1RYaL7UIY18J+RED1K023KWMsgjFL3Cnnex7hV1U/vOmXT5MiyhaYSCVL/Gh7Bl6UoqiEkB9D9K+r4RtiZAMhSq7sS4FEfBne0q6Xjvag+19HX+z4NXw/1kvb/dDaE7ewn3GSxwpql+4ur6d73+/CYlCzo9jzvceYcwAa2w8LWqScSLajEIMHSpMvNITVhqAW7KTYuQn3i13M4N/nEV6EfHEg=="
         config = SimpleConfig({'electrum_path': self.electrum_path})
         d = restore_wallet_from_text__for_unittest("9dk", path=None, config=config)
         wallet1 = d['wallet']  # type: Standard_Wallet
@@ -1122,7 +1122,7 @@ class TestLNUtil(ElectrumTestCase):
                 backup_version=0,
                 funding_txid='97767fdefef3152319363b772914d71e5eb70e793b835c13dce20037d3ac13fe',
                 funding_index=1,
-                funding_address='tb1qfsxllwl2edccpar9jas9wsxd4vhcewlxqwmn0w27kurkme3jvkdqn4msdp',
+                funding_address='tltc1qfsxllwl2edccpar9jas9wsxd4vhcewlxqwmn0w27kurkme3jvkdqvk83j7',
                 is_initiator=True,
                 node_id=bfh('02bf82e22f99dcd7ac1de4aad5152ce48f0694c46ec582567f379e0adbf81e2d0f'),
                 privkey=bfh('7e634853dc47f0bc2f2e0d1054b302fcb414371ddbd889f29ba8aa4e8b62c772'),
@@ -1145,7 +1145,7 @@ class TestLNUtil(ElectrumTestCase):
 
     @as_testnet
     async def test_decode_imported_channel_backup_v1(self):
-        encrypted_cb = "channel_backup:AVYIedu0qSLfY2M2bBxF6dA4RAxcmobp+3h9mxALWWsv5X7hhNg0XYOKNd11FE6BJOZgZnIZ4CCAlHtLNj0/9S5GbNhbNZiQXxeHMwC1lHvtjawkwSejIJyOI52DkDFHBAGZRd4fJjaPJRHnUizWfySVR4zjd08lTinpoIeL7C7tXBW1N6YqceqV7RpeoywlBXJtFfCCuw0hnUKgq3SMlBKapkNAIgGrg15aIHNcYeENxCxr5FD1s7DIwFSECqsBVnu/Ogx2oii8BfuxqJq8vuGq4Ib/BVaSVtdb2E1wklAor/CG0p9Fg9mFWND98JD+64nz9n/knPFFyHxTXErn+ct3ZcStsLYynWKUIocgu38PtzCJ7r5ivqOw4O49fbbzdjcgMUGklPYxjuinETneCo+dCPa1uepOGTqeOYmnjVYtYZYXOlWV1F5OtNoM7MwwJjAbz84="
+        encrypted_cb = "channel_backup:AYcJXx9gCYeEePRKUfuckvW3Sh61YO87vAU8kbRNDFy0QBg8x6PSoojA3PnNH0d39/RGYGCa2JrX+TLsZbtVkbsizD8GNAdDJio/YbFv84n6xVWn3xNbSg2wXD7RIQF87pzEAErLGUjRoQGi1VJqVkhzgJLsjxSbff/a4ewU3g3ug7jVfbaV20CdvM/GSCJ5FuC8K+7dJqSw6k5hTlsR7ETdGaNhKZKLcmvnSeiHHITgpiy5IKbO4dfy3PXgOIvA1QdBYlN5TZyHK+CAE7eOEDpjobAPwbHzxWqXB5gjX2N/y4Pod+Zj/t7jy4+yN7HJ9AHxTZWHtHkm9hKn/V2gpAfRXFQCEaOpD/4DE4RCyfd6Q0DhjUEVXykYI08RAhE6nJUh52myWLY8oh5y7GbT1CyqkKKDKo/cwb+n3N2TqKq1HBr4UN8Ig02Ff8OzXHTQsJO9AQY="
         config = SimpleConfig({'electrum_path': self.electrum_path})
         d = restore_wallet_from_text__for_unittest("9dk", path=None, config=config)
         wallet1 = d['wallet']  # type: Standard_Wallet
@@ -1155,7 +1155,7 @@ class TestLNUtil(ElectrumTestCase):
                 backup_version=1,
                 funding_txid='97767fdefef3152319363b772914d71e5eb70e793b835c13dce20037d3ac13fe',
                 funding_index=1,
-                funding_address='tb1qfsxllwl2edccpar9jas9wsxd4vhcewlxqwmn0w27kurkme3jvkdqn4msdp',
+                funding_address='tltc1qfsxllwl2edccpar9jas9wsxd4vhcewlxqwmn0w27kurkme3jvkdqvk83j7',
                 is_initiator=True,
                 node_id=bfh('02bf82e22f99dcd7ac1de4aad5152ce48f0694c46ec582567f379e0adbf81e2d0f'),
                 privkey=bfh('7e634853dc47f0bc2f2e0d1054b302fcb414371ddbd889f29ba8aa4e8b62c772'),
@@ -1257,5 +1257,4 @@ class TestLNUtil(ElectrumTestCase):
         )
         self.assertEqual(budget.fee_msat, config.LIGHTNING_PAYMENT_FEE_CUTOFF_MSAT)
         self.assertEqual(reversed_fee_msat, budget.fee_msat)
-
 

@@ -75,7 +75,7 @@ class TestCommands(ElectrumTestCase):
         # a malformed value is a usage error, not a traceback
         for argv, error in (
             (['add_request', 'help'], "invalid decimal value: 'help'"),
-            (['payto', 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx', 'abc'], "invalid decimal_or_max value: 'abc'"),
+            (['payto', 'tltc1qw508d6qejxtdg4y5r3zarvary0c5xw7klfsuq0', 'abc'], "invalid decimal_or_max value: 'abc'"),
             (['getmerkle', 'zz', '1'], "invalid txid value: 'zz'"),
             (['create', '--encrypt_file', 'foo bar'], "invalid bool value: 'foo bar'"),
         ):
@@ -86,7 +86,7 @@ class TestCommands(ElectrumTestCase):
                 self.assertIn(error, stderr.getvalue())
         # valid values and the special keywords are still accepted
         self.assertEqual('0.1', parser.parse_args(['add_request', '0.1']).amount)
-        self.assertEqual('!', parser.parse_args(['payto', 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx', '!']).amount)
+        self.assertEqual('!', parser.parse_args(['payto', 'tltc1qw508d6qejxtdg4y5r3zarvary0c5xw7klfsuq0', '!']).amount)
 
     def test_eval_bool(self):
         self.assertFalse(eval_bool("False"))
@@ -120,7 +120,7 @@ class TestCommands(ElectrumTestCase):
 
     async def test_encrypt_decrypt(self):
         wallet = restore_wallet_from_text__for_unittest(
-            'p2wpkh:L4rYY5QpfN6wJEF4SEKDpcGhTPnCe9zcGs6hiSnhpprZqVywFifN',
+            'p2wpkh:TAgoypi14k5Y54svysG62xp5QFRWiF1W64zxaFRFPo2jMPSMoa5D',
             path=None,
             config=self.config)['wallet']
         cmds = Commands(config=self.config)
@@ -131,22 +131,22 @@ class TestCommands(ElectrumTestCase):
 
     async def test_export_private_key_imported(self):
         wallet = restore_wallet_from_text__for_unittest(
-            'p2wpkh:L4rYY5QpfN6wJEF4SEKDpcGhTPnCe9zcGs6hiSnhpprZqVywFifN p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL',
+            'p2wpkh:TAgoypi14k5Y54svysG62xp5QFRWiF1W64zxaFRFPo2jMPSMoa5D p2wpkh:TAa25Tq4PdzhDKBoVaFaCdV3yxvLrRikQviNkuFQLeYopsVvNTV3',
             path=None,
             config=self.config)['wallet']
         cmds = Commands(config=self.config)
         # single address tests
-        with self.assertRaisesRegex(UserFacingException, "Invalid bitcoin address: asdasd"):
+        with self.assertRaisesRegex(UserFacingException, "Invalid litecoin address: asdasd"):
             await cmds.getprivatekeys("asdasd", wallet=wallet)  # error must name the whole string, see #3676
-        with self.assertRaisesRegex(UserFacingException, "Address not in wallet: bc1qgfam82qk7uwh5j2xxmcd8cmklpe0zackyj6r23"):
-            await cmds.getprivatekeys("bc1qgfam82qk7uwh5j2xxmcd8cmklpe0zackyj6r23", wallet=wallet)  # not in wallet
-        self.assertEqual("p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL",
-                         await cmds.getprivatekeys("bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw", wallet=wallet))
+        with self.assertRaisesRegex(UserFacingException, "Address not in wallet: ltc1qgfam82qk7uwh5j2xxmcd8cmklpe0zackqwq8jp"):
+            await cmds.getprivatekeys("ltc1qgfam82qk7uwh5j2xxmcd8cmklpe0zackqwq8jp", wallet=wallet)  # not in wallet
+        self.assertEqual("p2wpkh:TAa25Tq4PdzhDKBoVaFaCdV3yxvLrRikQviNkuFQLeYopsVvNTV3",
+                         await cmds.getprivatekeys("ltc1q2ccr34wzep58d4239tl3x3734ttle92arvely7", wallet=wallet))
         # list of addresses tests
-        with self.assertRaisesRegex(UserFacingException, "Invalid bitcoin address: asd$"):
-            await cmds.getprivatekeys(['bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw', 'asd'], wallet=wallet)
-        self.assertEqual(['p2wpkh:L4jkdiXszG26SUYvwwJhzGwg37H2nLhrbip7u6crmgNeJysv5FHL', 'p2wpkh:L4rYY5QpfN6wJEF4SEKDpcGhTPnCe9zcGs6hiSnhpprZqVywFifN'],
-                         await cmds.getprivatekeys(['bc1q2ccr34wzep58d4239tl3x3734ttle92a8srmuw', 'bc1q9pzjpjq4nqx5ycnywekcmycqz0wjp2nq604y2n'], wallet=wallet))
+        with self.assertRaisesRegex(UserFacingException, "Invalid litecoin address: asd$"):
+            await cmds.getprivatekeys(['ltc1q2ccr34wzep58d4239tl3x3734ttle92arvely7', 'asd'], wallet=wallet)
+        self.assertEqual(['p2wpkh:TAa25Tq4PdzhDKBoVaFaCdV3yxvLrRikQviNkuFQLeYopsVvNTV3', 'p2wpkh:TAgoypi14k5Y54svysG62xp5QFRWiF1W64zxaFRFPo2jMPSMoa5D'],
+                         await cmds.getprivatekeys(['ltc1q2ccr34wzep58d4239tl3x3734ttle92arvely7', 'ltc1q9pzjpjq4nqx5ycnywekcmycqz0wjp2nq7n0qjr'], wallet=wallet))
 
     async def test_export_private_key_deterministic(self):
         wallet = restore_wallet_from_text__for_unittest(
@@ -155,23 +155,23 @@ class TestCommands(ElectrumTestCase):
             config=self.config)['wallet']
         cmds = Commands(config=self.config)
         # single address tests
-        with self.assertRaisesRegex(UserFacingException, "Invalid bitcoin address: asdasd"):
+        with self.assertRaisesRegex(UserFacingException, "Invalid litecoin address: asdasd"):
             await cmds.getprivatekeys("asdasd", wallet=wallet)  # error must name the whole string, see #3676
-        with self.assertRaisesRegex(UserFacingException, "Address not in wallet: bc1qgfam82qk7uwh5j2xxmcd8cmklpe0zackyj6r23"):
-            await cmds.getprivatekeys("bc1qgfam82qk7uwh5j2xxmcd8cmklpe0zackyj6r23", wallet=wallet)  # not in wallet
-        self.assertEqual("p2wpkh:L15oxP24NMNAXxq5r2aom24pHPtt3Fet8ZutgL155Bad93GSubM2",
-                         await cmds.getprivatekeys("bc1q3g5tmkmlvxryhh843v4dz026avatc0zzr6h3af", wallet=wallet))
+        with self.assertRaisesRegex(UserFacingException, "Address not in wallet: ltc1qgfam82qk7uwh5j2xxmcd8cmklpe0zackqwq8jp"):
+            await cmds.getprivatekeys("ltc1qgfam82qk7uwh5j2xxmcd8cmklpe0zackqwq8jp", wallet=wallet)  # not in wallet
+        self.assertEqual("p2wpkh:T6v5Q8KEmjLmJoTxPfXfyNcCEFYC7Lfmwmp9Y8dce9knevo9ZkPk",
+                         await cmds.getprivatekeys("ltc1q3g5tmkmlvxryhh843v4dz026avatc0zz8xd49e", wallet=wallet))
         # list of addresses tests
-        with self.assertRaisesRegex(UserFacingException, "Invalid bitcoin address: asd$"):
-            await cmds.getprivatekeys(['bc1q3g5tmkmlvxryhh843v4dz026avatc0zzr6h3af', 'asd'], wallet=wallet)
-        self.assertEqual(['p2wpkh:L15oxP24NMNAXxq5r2aom24pHPtt3Fet8ZutgL155Bad93GSubM2', 'p2wpkh:L4rYY5QpfN6wJEF4SEKDpcGhTPnCe9zcGs6hiSnhpprZqVywFifN'],
-                         await cmds.getprivatekeys(['bc1q3g5tmkmlvxryhh843v4dz026avatc0zzr6h3af', 'bc1q9pzjpjq4nqx5ycnywekcmycqz0wjp2nq604y2n'], wallet=wallet))
+        with self.assertRaisesRegex(UserFacingException, "Invalid litecoin address: asd$"):
+            await cmds.getprivatekeys(['ltc1q3g5tmkmlvxryhh843v4dz026avatc0zz8xd49e', 'asd'], wallet=wallet)
+        self.assertEqual(['p2wpkh:T6v5Q8KEmjLmJoTxPfXfyNcCEFYC7Lfmwmp9Y8dce9knevo9ZkPk', 'p2wpkh:TAgoypi14k5Y54svysG62xp5QFRWiF1W64zxaFRFPo2jMPSMoa5D'],
+                         await cmds.getprivatekeys(['ltc1q3g5tmkmlvxryhh843v4dz026avatc0zz8xd49e', 'ltc1q9pzjpjq4nqx5ycnywekcmycqz0wjp2nq7n0qjr'], wallet=wallet))
 
     async def test_verifymessage_enforces_strict_base64(self):
         cmds = Commands(config=self.config)
         msg = "hello there"
-        addr = "bc1qq2tmmcngng78nllq2pvrkchcdukemtj56uyue0"
-        sig = "HznHvCsY//Zr5JvPIR3rN/RbCkttvrUs8Yt+vw+e1c29BLMSlcrN4+Y4Pq8e/UJuh2bDrUboTfsFhBJap+fPmNY="
+        addr = "ltc1qq2tmmcngng78nllq2pvrkchcdukemtj57q7cpl"
+        sig = "HzURrQSLdrnfOpC59JBwVgIEfrGX2tuSlwkpArWU85psFCEEJsgaJeod7YzMMWB1ELT+Ow1T/Z0M9ls7+BTlycY="
         self.assertTrue(await cmds.verifymessage(addr, sig, msg))
         self.assertFalse(await cmds.verifymessage(addr, sig+"trailinggarbage", msg))
 
@@ -265,7 +265,7 @@ class TestCommandsTestnet(ElectrumTestCase):
             ],
             "outputs": [
                 {
-                    "address": "tb1q4s8z6g5jqzllkgt8a4har94wl8tg0k9m8kv5zd",
+                    "address": "tltc1q4s8z6g5jqzllkgt8a4har94wl8tg0k9m77w2jy",
                     "value_sats": 990000
                 }
             ]
@@ -287,7 +287,7 @@ class TestCommandsTestnet(ElectrumTestCase):
             ],
             "outputs": [
                 {
-                    "address": "tb1q4s8z6g5jqzllkgt8a4har94wl8tg0k9m8kv5zd",
+                    "address": "tltc1q4s8z6g5jqzllkgt8a4har94wl8tg0k9m77w2jy",
                     "value_sats": 990000
                 }
             ]
@@ -321,14 +321,14 @@ class TestCommandsTestnet(ElectrumTestCase):
 
         cmds = Commands(config=self.config)
         tx_str = await cmds.payto(
-            destination="tb1qsyzgpwa0vg2940u5t6l97etuvedr5dejpf9tdy",
+            destination="tltc1qsyzgpwa0vg2940u5t6l97etuvedr5dejcp84ad",
             amount="0.00123456",
             feerate=50,
             locktime=1972344,
             wallet=wallet)
 
         tx_str_2 = await cmds.payto(
-            destination="tb1qsyzgpwa0vg2940u5t6l97etuvedr5dejpf9tdy",
+            destination="tltc1qsyzgpwa0vg2940u5t6l97etuvedr5dejcp84ad",
             amount="0.00123456",
             feerate="50.000",  # test that passing a string feerate results in the same tx
             locktime=1972344,
@@ -337,7 +337,7 @@ class TestCommandsTestnet(ElectrumTestCase):
         self.assertEqual(tx_str, tx_str_2)
         tx = tx_from_any(tx_str)
         self.assertEqual(2, len(tx.outputs()))
-        txout = TxOutput.from_address_and_value("tb1qsyzgpwa0vg2940u5t6l97etuvedr5dejpf9tdy", 123456)
+        txout = TxOutput.from_address_and_value("tltc1qsyzgpwa0vg2940u5t6l97etuvedr5dejcp84ad", 123456)
         self.assertTrue(txout in tx.outputs())
         self.assertEqual("02000000000101a0a8800d2d6bb0a4a8b93b793f39439c4139a40d30e634cf5cd601e5391de6ed0100000000fdffffff0240e2010000000000160014810480bbaf62145abf945ebe5f657c665a3a3732462b060000000000160014a5103285eb519f826520a9f7d3227e1eaa7ec5f802473044022057a6f4b1ec63336c7d0ba233e785ec9f2e2d9c2d67617a50e069f4498ee6a3b7022032fb331e0bef06f46e9cb77bfe94413142653c4912516835e941fa7f170c1a53012103001b55f19541faaf7e6d57dd1bdb9fdc37725fc500e12f2418cc11e0aed4154978181e00",
                          tx_str)
@@ -358,7 +358,7 @@ class TestCommandsTestnet(ElectrumTestCase):
 
         async def create_tx():
             return await cmds.payto(
-                destination="tb1qsyzgpwa0vg2940u5t6l97etuvedr5dejpf9tdy",
+                destination="tltc1qsyzgpwa0vg2940u5t6l97etuvedr5dejcp84ad",
                 amount="0.00123456",
                 feerate=50,
                 locktime=1972344,
@@ -373,7 +373,7 @@ class TestCommandsTestnet(ElectrumTestCase):
 
         tx = tx_from_any(tx_str)
         self.assertEqual(2, len(tx.outputs()))
-        txout = TxOutput.from_address_and_value("tb1qsyzgpwa0vg2940u5t6l97etuvedr5dejpf9tdy", 123456)
+        txout = TxOutput.from_address_and_value("tltc1qsyzgpwa0vg2940u5t6l97etuvedr5dejcp84ad", 123456)
         self.assertTrue(txout in tx.outputs())
 
     async def test_paytomany_multiple_max_spends(self):
@@ -389,10 +389,10 @@ class TestCommandsTestnet(ElectrumTestCase):
 
         cmds = Commands(config=self.config)
         tx_str = await cmds.paytomany(
-            outputs=[["tb1qk3g0t9pw5wctkzz7gh6k3ljfuukn729s67y54e", 0.002],
-                     ["tb1qr7evucrllljtryam6y2k3ntmlptq208pghql2h", "2!"],
-                     ["tb1qs3msqp0n0qade2haanjw2dkaa5lm77vwvce00h", 0.003],
-                     ["tb1qar4ye43tdfj6y5n3yndp9adhs2wuz2v0wgqn5l", "3!"]],
+            outputs=[["tltc1qk3g0t9pw5wctkzz7gh6k3ljfuukn729srkx29s", 0.002],
+                     ["tltc1qr7evucrllljtryam6y2k3ntmlptq208p3lzp67", "2!"],
+                     ["tltc1qs3msqp0n0qade2haanjw2dkaa5lm77vw4sm3l7", 0.003],
+                     ["tltc1qar4ye43tdfj6y5n3yndp9adhs2wuz2v0hqzdyk", "3!"]],
             fee="0.00005000",
             locktime=2094054,
             wallet=wallet)
@@ -411,9 +411,9 @@ class TestCommandsTestnet(ElectrumTestCase):
         funding_tx = Transaction('0200000000010165806607dd458280cb57bf64a16cf4be85d053145227b98c28932e953076b8e20000000000fdffffff02ac150700000000001600147e3ddfe6232e448a8390f3073c7a3b2044fd17eb102908000000000016001427fbe3707bc57e5bb63d6f15733ec88626d8188a02473044022049ce9efbab88808720aa563e2d9bc40226389ab459c4390ea3e89465665d593502206c1c7c30a2f640af1e463e5107ee4cfc0ee22664cfae3f2606a95303b54cdef80121026269e54d06f7070c1f967eb2874ba60de550dfc327a945c98eb773672d9411fd77181e00')
         wallet.adb.receive_tx_callback(funding_tx, tx_height=TX_HEIGHT_UNCONFIRMED)
         cmds = Commands(config=self.config)
-        addr = "tb1qyla7xurmc4l9hd3adu2hx0kgscndsxy2snf2gg"
+        addr = "tltc1qyla7xurmc4l9hd3adu2hx0kgscndsxy2fmt5cp"
         coin = "ede61d39e501d65ccf34e6300da439419c43393f793bb9a8a4b06b2d0d80a8a0:1"
-        dest = "tb1qsyzgpwa0vg2940u5t6l97etuvedr5dejpf9tdy"
+        dest = "tltc1qsyzgpwa0vg2940u5t6l97etuvedr5dejcp84ad"
         # listunspent: the single funding output
         coins = await cmds.listunspent(wallet=wallet)
         self.assertEqual([(f"{c['prevout_hash']}:{c['prevout_n']}", c['address'], c['value']) for c in coins],
@@ -437,9 +437,9 @@ class TestCommandsTestnet(ElectrumTestCase):
             path=None,
             config=self.config)['wallet']
         cmds = Commands(config=self.config)
-        addr = "tb1qyla7xurmc4l9hd3adu2hx0kgscndsxy2snf2gg"
+        addr = "tltc1qyla7xurmc4l9hd3adu2hx0kgscndsxy2fmt5cp"
         sig = await cmds.signmessage(addr, "hello", wallet=wallet)
-        self.assertEqual("IEmhImhYOceJxpcdFc5NgtSEix3i9OYWPIY9uBO3WU08J4eWYby4oiMC1qS7ZgrbMidq4tKFGplUqZCAYeN2RX0=", sig)
+        self.assertEqual("IDh9Du/LSCp3FCjN899+5Fn2VAyvKcYfxkV9uZL6acfZJ5/ErHSYdTquiI7xkVrxfeubLl1IOHptt4QdO80Fuy8=", sig)
         self.assertTrue(await cmds.verifymessage(addr, sig, "hello"))
         self.assertFalse(await cmds.verifymessage(addr, sig, "hello!"))
         # on the CLI, surrounding whitespace is part of the message
@@ -449,7 +449,7 @@ class TestCommandsTestnet(ElectrumTestCase):
         self.assertFalse(await cmds.verifymessage(addr, sig, " hello "))
         # only addresses of this wallet can sign
         with self.assertRaises(UserFacingException):
-            await cmds.signmessage("tb1qsyzgpwa0vg2940u5t6l97etuvedr5dejpf9tdy", "hello", wallet=wallet)
+            await cmds.signmessage("tltc1qsyzgpwa0vg2940u5t6l97etuvedr5dejcp84ad", "hello", wallet=wallet)
 
     async def test_listaddresses_and_setlabel(self):
         wallet = restore_wallet_from_text__for_unittest(
@@ -460,7 +460,7 @@ class TestCommandsTestnet(ElectrumTestCase):
         funding_tx = Transaction('0200000000010165806607dd458280cb57bf64a16cf4be85d053145227b98c28932e953076b8e20000000000fdffffff02ac150700000000001600147e3ddfe6232e448a8390f3073c7a3b2044fd17eb102908000000000016001427fbe3707bc57e5bb63d6f15733ec88626d8188a02473044022049ce9efbab88808720aa563e2d9bc40226389ab459c4390ea3e89465665d593502206c1c7c30a2f640af1e463e5107ee4cfc0ee22664cfae3f2606a95303b54cdef80121026269e54d06f7070c1f967eb2874ba60de550dfc327a945c98eb773672d9411fd77181e00')
         wallet.adb.receive_tx_callback(funding_tx, tx_height=TX_HEIGHT_UNCONFIRMED)
         cmds = Commands(config=self.config)
-        addr = "tb1qyla7xurmc4l9hd3adu2hx0kgscndsxy2snf2gg"
+        addr = "tltc1qyla7xurmc4l9hd3adu2hx0kgscndsxy2fmt5cp"
         self.assertEqual([addr], await cmds.listaddresses(funded=True, wallet=wallet))
         self.assertEqual([(addr, "0.005348")], await cmds.listaddresses(funded=True, balance=True, wallet=wallet))
         receiving = await cmds.listaddresses(receiving=True, wallet=wallet)
@@ -756,8 +756,8 @@ class TestCommandsTestnet(ElectrumTestCase):
                         }
                     ],
                     'outputs': [
-                        {'address': 'tb1qr5mf6sumdlhjrq9t6wlyvdm960zu0n0t5d60ug', 'value_sat': 500000},
-                        {'address': 'tb1qp3p2d72gj2l7r6za056tgu4ezsurjphper4swh', 'value_sat': 762100}
+                        {'address': 'tltc1qr5mf6sumdlhjrq9t6wlyvdm960zu0n0td9c3vp', 'value_sat': 500000},
+                        {'address': 'tltc1qp3p2d72gj2l7r6za056tgu4ezsurjphpqthw77', 'value_sat': 762100}
                     ],
                 }
             )

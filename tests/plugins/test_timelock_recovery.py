@@ -46,7 +46,7 @@ class TestTimelockRecovery(ElectrumTestCase):
 
         context = TimelockRecoveryContext(wallet)
         alert_address = context.get_alert_address()
-        self.assertEqual(alert_address, 'tb1qchyc02y9mv4xths4je9puc4yzuxt8rfm26ef07')
+        self.assertEqual(alert_address, 'tltc1qchyc02y9mv4xths4je9puc4yzuxt8rfmnjmhlh')
 
     async def test_get_cancellation_address(self):
         wallet = self._create_default_wallet()
@@ -54,14 +54,14 @@ class TestTimelockRecovery(ElectrumTestCase):
         context = TimelockRecoveryContext(wallet)
         context.get_alert_address()
         cancellation_address = context.get_cancellation_address()
-        self.assertEqual(cancellation_address, 'tb1q6k5h4cz6ra8nzhg90xm9wldvadgh0fpttfthcg')
+        self.assertEqual(cancellation_address, 'tltc1q6k5h4cz6ra8nzhg90xm9wldvadgh0fptjpffgp')
 
     async def test_make_unsigned_alert_tx(self):
         wallet = self._create_default_wallet()
 
         context = TimelockRecoveryContext(wallet)
         context.outputs = [
-            PartialTxOutput(scriptpubkey=address_to_script('tb1q4s8z6g5jqzllkgt8a4har94wl8tg0k9m8kv5zd'), value='!'),
+            PartialTxOutput(scriptpubkey=address_to_script('tltc1q4s8z6g5jqzllkgt8a4har94wl8tg0k9m77w2jy'), value='!'),
         ]
 
         alert_tx = context.make_unsigned_alert_tx(fee_policy=FixedFeePolicy(5000))
@@ -73,8 +73,8 @@ class TestTimelockRecovery(ElectrumTestCase):
         ])
         alert_tx_outputs = [(tx_output.address, tx_output.value) for tx_output in alert_tx.outputs()]
         self.assertEqual(alert_tx_outputs, [
-            ('tb1q4s8z6g5jqzllkgt8a4har94wl8tg0k9m8kv5zd', 600),
-            ('tb1qchyc02y9mv4xths4je9puc4yzuxt8rfm26ef07', 743065),
+            ('tltc1q4s8z6g5jqzllkgt8a4har94wl8tg0k9m77w2jy', 600),
+            ('tltc1qchyc02y9mv4xths4je9puc4yzuxt8rfmnjmhlh', 743065),
         ])
         self.assertEqual(alert_tx.txid(), '01c227f136c4490ec7cb0fe2ba5e44c436f58906b7fc29a83cb865d7e3bfaa60')
 
@@ -83,7 +83,7 @@ class TestTimelockRecovery(ElectrumTestCase):
 
         context = TimelockRecoveryContext(wallet)
         context.outputs = [
-            PartialTxOutput(scriptpubkey=address_to_script('tb1q4s8z6g5jqzllkgt8a4har94wl8tg0k9m8kv5zd'), value='!'),
+            PartialTxOutput(scriptpubkey=address_to_script('tltc1q4s8z6g5jqzllkgt8a4har94wl8tg0k9m77w2jy'), value='!'),
         ]
         context.alert_tx = context.make_unsigned_alert_tx(fee_policy=FixedFeePolicy(5000))
         context.timelock_days = 90
@@ -98,7 +98,7 @@ class TestTimelockRecovery(ElectrumTestCase):
 
         recovery_tx_outputs = [(tx_output.address, tx_output.value) for tx_output in recovery_tx.outputs()]
         self.assertEqual(recovery_tx_outputs, [
-            ('tb1q4s8z6g5jqzllkgt8a4har94wl8tg0k9m8kv5zd', 738065),
+            ('tltc1q4s8z6g5jqzllkgt8a4har94wl8tg0k9m77w2jy', 738065),
         ])
 
     async def test_make_unsigned_cancellation_tx(self):
@@ -106,7 +106,7 @@ class TestTimelockRecovery(ElectrumTestCase):
 
         context = TimelockRecoveryContext(wallet)
         context.outputs = [
-            PartialTxOutput(scriptpubkey=address_to_script('tb1q4s8z6g5jqzllkgt8a4har94wl8tg0k9m8kv5zd'), value='!'),
+            PartialTxOutput(scriptpubkey=address_to_script('tltc1q4s8z6g5jqzllkgt8a4har94wl8tg0k9m77w2jy'), value='!'),
         ]
         context.alert_tx = context.make_unsigned_alert_tx(fee_policy=FixedFeePolicy(5000))
 
@@ -119,7 +119,7 @@ class TestTimelockRecovery(ElectrumTestCase):
         self.assertEqual(cancellation_tx.inputs()[0].nsequence, 0xfffffffd)
         cancellation_tx_outputs = [(tx_output.address, tx_output.value) for tx_output in cancellation_tx.outputs()]
         self.assertEqual(cancellation_tx_outputs, [
-            ('tb1q6k5h4cz6ra8nzhg90xm9wldvadgh0fpttfthcg', 737065),
+            ('tltc1q6k5h4cz6ra8nzhg90xm9wldvadgh0fptjpffgp', 737065),
         ])
 
     def test_checksum_non_ascii(self):
@@ -130,7 +130,6 @@ class TestTimelockRecovery(ElectrumTestCase):
         self.assertEqual(result, "74674eca")
 
     def test_checksum_bip_example(self):
-        # test vector from https://github.com/bitcoin/bips/blob/b3827283792882ed0176a12033944fd63c5d398b/bip-0128.mediawiki#reference-implementation
         json_data = {
           "kind": "timelock-recovery-plan",
           "id": "exported-692452189b301b561ed57cbe",
@@ -144,9 +143,9 @@ class TestTimelockRecovery(ElectrumTestCase):
           "timelock_days": 2,
           "anchor_amount_sats": 600,
           "anchor_addresses": [
-            "bc1qnda6x2gxdh3yujd2zjpsd7qzx3awxmlaf9wwlk"
+            "ltc1qnda6x2gxdh3yujd2zjpsd7qzx3awxmlade528x"
           ],
-          "alert_address": "bc1qj0f9sjenwyjs0u7mlgvptjp05z3syzq7mru3ep",
+          "alert_address": "ltc1qj0f9sjenwyjs0u7mlgvptjp05z3syzq7llx4p3",
           "alert_inputs": [
             "a265a485df4c6417019b91379257eb387bceeda96f7bb6311794b8ed358cf104:0",
             "2f621c2151f33173983133cbc1000e3b603b8a18423b0379feffe8513171d5d3:0"
@@ -161,7 +160,7 @@ class TestTimelockRecovery(ElectrumTestCase):
           "recovery_weight": 437,
           "recovery_outputs": [
             [
-              "bc1qnda6x2gxdh3yujd2zjpsd7qzx3awxmlaf9wwlk",
+              "ltc1qnda6x2gxdh3yujd2zjpsd7qzx3awxmlade528x",
               21926,
               "My Backup Wallet"
             ]
@@ -169,4 +168,4 @@ class TestTimelockRecovery(ElectrumTestCase):
           "metadata": "sig:825d6b3858c175c7fc16da3134030e095c4f9089c3c89722247eeedc08a7ef4f",
         }
         result = TimelockRecoveryPlugin.json_checksum(json_data)
-        self.assertEqual(result, "92f8b3da")
+        self.assertEqual(result, "5782c52e")

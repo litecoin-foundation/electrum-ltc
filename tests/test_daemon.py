@@ -185,7 +185,7 @@ class TestUnifiedPassword(DaemonTestCase):
         paths.append(self._restore_wallet_from_text(wifs, password="123456", encrypt_file=False))
         paths.append(self._restore_wallet_from_text(wifs, password=None))
         # addrs
-        addrs = "tb1qq2tmmcngng78nllq2pvrkchcdukemtj5s6l0zu tb1qm7ckcjsed98zhvhv3dr56a22w3fehlkxyh4wgd"
+        addrs = "tltc1qq2tmmcngng78nllq2pvrkchcdukemtj5fja3j4 tltc1qm7ckcjsed98zhvhv3dr56a22w3fehlkxalhscy"
         paths.append(self._restore_wallet_from_text(addrs, password="123456", encrypt_file=True))
         paths.append(self._restore_wallet_from_text(addrs, password="123456", encrypt_file=False))
         paths.append(self._restore_wallet_from_text(addrs, password=None))

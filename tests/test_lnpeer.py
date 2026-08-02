@@ -2385,14 +2385,14 @@ class TestPeerForwarding(TestPeer):
     async def test_payment_with_temp_channel_failure_and_liquidity_hints(self):
         # prepare channels such that a temporary channel failure happens at c->d
         graph_definition = self.GRAPH_DEFINITIONS['square_graph']
-        graph_definition['alice']['channels']['carol'][0]['local_balance_msat'] = 200_000_000
-        graph_definition['alice']['channels']['carol'][0]['remote_balance_msat'] = 200_000_000
-        graph_definition['carol']['channels']['dave'][0]['local_balance_msat'] = 50_000_000
-        graph_definition['carol']['channels']['dave'][0]['remote_balance_msat'] = 200_000_000
-        graph_definition['alice']['channels']['bob'][0]['local_balance_msat'] = 200_000_000
-        graph_definition['alice']['channels']['bob'][0]['remote_balance_msat'] = 200_000_000
-        graph_definition['bob']['channels']['dave'][0]['local_balance_msat'] = 200_000_000
-        graph_definition['bob']['channels']['dave'][0]['remote_balance_msat'] = 200_000_000
+        graph_definition['alice']['channels']['carol'][0]['local_balance_msat'] = 450_000_000
+        graph_definition['alice']['channels']['carol'][0]['remote_balance_msat'] = 450_000_000
+        graph_definition['carol']['channels']['dave'][0]['local_balance_msat'] = 112_500_000
+        graph_definition['carol']['channels']['dave'][0]['remote_balance_msat'] = 450_000_000
+        graph_definition['alice']['channels']['bob'][0]['local_balance_msat'] = 450_000_000
+        graph_definition['alice']['channels']['bob'][0]['remote_balance_msat'] = 450_000_000
+        graph_definition['bob']['channels']['dave'][0]['local_balance_msat'] = 450_000_000
+        graph_definition['bob']['channels']['dave'][0]['remote_balance_msat'] = 450_000_000
         graph = self.prepare_chans_and_peers_in_graph(graph_definition)
 
         # the payment happens in two attempts:
@@ -2400,7 +2400,7 @@ class TestPeerForwarding(TestPeer):
         #   with chanupd: ORPHANED, private channel update
         #   c->d gets a liquidity hint and gets blocked
         # 2. along a->b->d with success
-        amount_to_pay = 100_000_000
+        amount_to_pay = 225_000_000
         peers = graph.peers.values()
         async def pay(lnaddr, pay_req):
             self.assertEqual(PR_UNPAID, graph.workers['dave'].get_payment_status(lnaddr.paymenthash, direction=RECEIVED))

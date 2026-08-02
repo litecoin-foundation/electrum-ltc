@@ -69,7 +69,7 @@ SWAPDATA = SwapData(
     preimage=bytes.fromhex('f1939b5723155713855d7ebea6e174f77d41d669269e7f138856c3de190e7a36'),
     prepay_hash=None,
     privkey=bytes.fromhex('58fd0018a9a2737d1d6b81d380df96bf0c858473a9592015508a270a7c9b1d8d'),
-    lockup_address='tb1q2pvugjl4w56rqw4c7zg0q6mmmev0t5jjy3qzg7sl766phh9fxjxsrtl77t',
+    lockup_address='tltc1q2pvugjl4w56rqw4c7zg0q6mmmev0t5jjy3qzg7sl766phh9fxjxsugrlp5',
     claim_to_output=None,
     funding_txid='897eea7f53e917323e7472d7a2e3099173f7836c57f1b6850f5cbdfe8085dbf9',
     spending_txid=None,
@@ -155,7 +155,7 @@ class TestTxBatcher(ElectrumTestCase):
         # tx1 gets mined
         # txbatcher creates a new transaction tx2, child of tx1
         #
-        OUTGOING_ADDRESS = 'tb1q7rl9cxr85962ztnsze089zs8ycv52hk43f3m9n'
+        OUTGOING_ADDRESS = 'tltc1q7rl9cxr85962ztnsze089zs8ycv52hk4gpn946'
         wallet = self._create_wallet()
         # fund wallet
         funding_tx = Transaction(WALLET_DATA["funding_tx"])
@@ -206,7 +206,7 @@ class TestTxBatcher(ElectrumTestCase):
         #
         # adb still has tx1, so txbatcher creates a child of tx1, which cannot be broadcast.
         # when we learn about tx1', txbatcher must not pay o2 again.
-        OUTGOING_ADDRESS = 'tb1q7rl9cxr85962ztnsze089zs8ycv52hk43f3m9n'
+        OUTGOING_ADDRESS = 'tltc1q7rl9cxr85962ztnsze089zs8ycv52hk4gpn946'
         wallet = self._create_wallet()
         funding_tx = Transaction(WALLET_DATA["funding_tx"])
         await self.network.try_broadcasting(funding_tx, 'funding')
@@ -261,14 +261,14 @@ class TestTxBatcher(ElectrumTestCase):
         self.logger.info(f'wallet balance1 {wallet.get_balance()}')
 
         # to_self_payment tx1
-        output1 = PartialTxOutput.from_address_and_value("tb1qyfnv3y866ufedugxxxfksyratv4pz3h78g9dad", 20_000)
+        output1 = PartialTxOutput.from_address_and_value("tltc1qyfnv3y866ufedugxxxfksyratv4pz3h77q8ndy", 20_000)
         wallet.txbatcher.add_payment_output('default', output1)
         tx1 = await self.network.next_tx()
         assert len(tx1.outputs()) == 2
         assert output1 in tx1.outputs()
 
         # outgoing payment tx2
-        output2 = PartialTxOutput.from_address_and_value("tb1qkfn0fude7z789uys2u7sf80kd4805zpvs3na0h", 90_000)
+        output2 = PartialTxOutput.from_address_and_value("tltc1qkfn0fude7z789uys2u7sf80kd4805zpvfe3rl7", 90_000)
         wallet.txbatcher.add_payment_output('default', output2)
         # before tx1 gets confirmed, txbatch.create_transaction will raise notenoughfunds
         await asyncio.sleep(wallet.txbatcher.SLEEP_INTERVAL)
@@ -292,7 +292,7 @@ class TestTxBatcher(ElectrumTestCase):
         funding_tx = Transaction(WALLET_DATA['funding_tx'])
         await self.network.try_broadcasting(funding_tx, 'funding')
         await self.network.next_tx()
-        output1 = PartialTxOutput.from_address_and_value('tb1q7rl9cxr85962ztnsze089zs8ycv52hk43f3m9n', 10_000)
+        output1 = PartialTxOutput.from_address_and_value('tltc1q7rl9cxr85962ztnsze089zs8ycv52hk4gpn946', 10_000)
         wallet.txbatcher.add_payment_output('default', output1)
         tx1 = await self.network.next_tx()
         batch = wallet.txbatcher.tx_batches['default']
@@ -304,7 +304,7 @@ class TestTxBatcher(ElectrumTestCase):
         self.assertEqual(tx1_bumped.txid(), (await batch.find_base_tx()).txid())
 
         # tx1_bumped is replaced by a tx that also pays someone else: we start a new batch
-        output_other = PartialTxOutput.from_address_and_value('tb1qkfn0fude7z789uys2u7sf80kd4805zpvs3na0h', 30_000)
+        output_other = PartialTxOutput.from_address_and_value('tltc1qkfn0fude7z789uys2u7sf80kd4805zpvfe3rl7', 30_000)
         tx1_other = wallet.make_unsigned_transaction(outputs=[output_other], fee_policy=FeePolicy('feerate:20000'), base_tx=tx1_bumped)
         wallet.sign_transaction(tx1_other, password=None)
         wallet.adb.receive_tx_callback(tx1_other, tx_height=TX_HEIGHT_UNCONFIRMED)
@@ -312,7 +312,7 @@ class TestTxBatcher(ElectrumTestCase):
 
         # the next payment does not replace tx1_other, so output_other is not paid by us,
         # and output1, paid by tx1_other, is not paid again
-        output2 = PartialTxOutput.from_address_and_value('tb1q7rl9cxr85962ztnsze089zs8ycv52hk43f3m9n', 20_000)
+        output2 = PartialTxOutput.from_address_and_value('tltc1q7rl9cxr85962ztnsze089zs8ycv52hk4gpn946', 20_000)
         wallet.txbatcher.add_payment_output('default', output2)
         tx2 = await self.network.next_tx()
         self.assertIn(output2, tx2.outputs())
@@ -333,7 +333,7 @@ class TestTxBatcher(ElectrumTestCase):
         tx_mined_status = wallet.adb.get_tx_height(tx.txid())
         wallet.adb.add_verified_tx(tx.txid(), dataclasses.replace(tx_mined_status, conf=1))
         # a sweep input paired with an output, like a first-stage htlc tx
-        sweep_txout = PartialTxOutput.from_address_and_value('tb1qy6xmdj96v5dzt3j08hgc05yk3kltqsnmw4r6ry', SWAPDATA.onchain_amount)
+        sweep_txout = PartialTxOutput.from_address_and_value('tltc1qy6xmdj96v5dzt3j08hgc05yk3kltqsnmhapynd', SWAPDATA.onchain_amount)
         sweep_info = SWAP_SWEEP_INFO._replace(txout=sweep_txout)
         wallet.txbatcher.add_sweep_input('default', sweep_info)
         tx1 = await self.network.next_tx()
@@ -367,7 +367,7 @@ class TestTxBatcher(ElectrumTestCase):
         self.assertEqual(SWAP_CLAIM_TX, str(tx))
         # add a new payment, reusing the same input
         # this tests that txin.make_witness() can be called more than once
-        output1 = PartialTxOutput.from_address_and_value("tb1qyfnv3y866ufedugxxxfksyratv4pz3h78g9dad", 20_000)
+        output1 = PartialTxOutput.from_address_and_value("tltc1qyfnv3y866ufedugxxxfksyratv4pz3h77q8ndy", 20_000)
         wallet.txbatcher.add_payment_output('default', output1)
         new_tx = await self.network.next_tx()
         # check that we batched with previous tx
@@ -393,7 +393,7 @@ class TestTxBatcher(ElectrumTestCase):
         self.assertTrue(wallet.is_mine(tx.outputs()[0].address))
         # add a payment to the batch. the batch now has a txo, but the change still must
         # not be sent to the address of the sweep input
-        output1 = PartialTxOutput.from_address_and_value("tb1qyfnv3y866ufedugxxxfksyratv4pz3h78g9dad", 20_000)
+        output1 = PartialTxOutput.from_address_and_value("tltc1qyfnv3y866ufedugxxxfksyratv4pz3h77q8ndy", 20_000)
         wallet.txbatcher.add_payment_output('default', output1)
         new_tx = await self.network.next_tx()
         self.assertIn(output1, new_tx.outputs())
@@ -422,7 +422,7 @@ class TestTxBatcher(ElectrumTestCase):
         wallet.adb.add_verified_tx(tx.txid(), dataclasses.replace(tx_mined_status, conf=1))
         # the batch contains both a sweep input and a payment output
         wallet.txbatcher.add_sweep_input('default', SWAP_SWEEP_INFO)
-        output1 = PartialTxOutput.from_address_and_value("tb1qyfnv3y866ufedugxxxfksyratv4pz3h78g9dad", 20_000)
+        output1 = PartialTxOutput.from_address_and_value("tltc1qyfnv3y866ufedugxxxfksyratv4pz3h77q8ndy", 20_000)
         wallet.txbatcher.add_payment_output('default', output1)
         tx = wallet.txbatcher.tx_batches['default'].create_next_transaction(None)
         self.assertIn(output1, tx.outputs())
@@ -539,7 +539,7 @@ class TestTxBatcher(ElectrumTestCase):
         self.assertIn(sweep_info.txin.prevout, batch.batch_inputs)
 
         # we can still create and sign a replacement of the tx that spends the input
-        output = PartialTxOutput.from_address_and_value("tb1qyfnv3y866ufedugxxxfksyratv4pz3h78g9dad", 20_000)
+        output = PartialTxOutput.from_address_and_value("tltc1qyfnv3y866ufedugxxxfksyratv4pz3h77q8ndy", 20_000)
         wallet.txbatcher.add_payment_output('default', output)
         new_tx = await self.network.next_tx()
         self.assertEqual(sweep_info.txin.prevout, new_tx.inputs()[0].prevout)

@@ -21,7 +21,7 @@ class TestContacts(ElectrumTestCase):
         d = restore_wallet_from_text__for_unittest(text, path=self.wallet_path, config=self.config)
         w = d['wallet']  # type: Abstract_Wallet
         w.contacts["myNNuLYNgHE92nGQuJd5mXo6gy9gKXEDyQ"] = ("address", "alice")
-        w.contacts["tb1q4syjltptqwhe62t3u5gwz9nsw87kmcwx003z05"] = ("address", "bob")
+        w.contacts["tltc1q4syjltptqwhe62t3u5gwz9nsw87kmcwxk8nula"] = ("address", "bob")
         self.assertEqual(2, len(w.contacts))
         await w.stop()
         del w

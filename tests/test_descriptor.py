@@ -43,7 +43,7 @@ class TestDescriptor(ElectrumTestCase):
         self.assertEqual(e.output_script, unhexlify("0014d95fc47eada9e4c3cf59a2cbf9e96517c3ba2efa"))
         self.assertEqual(e.redeem_script, None)
         self.assertEqual(e.witness_script, None)
-        self.assertEqual(e.address(), "tb1qm90ugl4d48jv8n6e5t9ln6t9zlpm5th690vysp")
+        self.assertEqual(e.address(), "tltc1qm90ugl4d48jv8n6e5t9ln6t9zlpm5th6u8w6qg")
 
     @as_testnet
     def test_parse_multisig_descriptor_with_origin(self):
@@ -317,7 +317,7 @@ class TestDescriptor(ElectrumTestCase):
         self.assertEqual(e.output_script, bfh("a914644ece12bab2f84ad6de96ec18de51e6168c028987"))
         self.assertEqual(e.redeem_script, bfh("0020824ce4ffab74a8d09c2f77ed447fb040ea5dfbed06f8e3b3327127a18634f6a7"))
         self.assertEqual(e.witness_script, bfh("5221034e703dfcd64f23ad5d6156ee3b9dd7566137626c663bb521bf7109575997233421033a4f18d2b498273ed7439c59f6d8a673d5b9c67a03163d530e12c941ca22be3352ae"))
-        self.assertEqual(e.address(), "2N2Pbxw3HNJ9jrUw8LCSfXyDWx9TKGRT2an")
+        self.assertEqual(e.address(), "QVkN5wuXPQCpzfhAxJUgcfex6Xu98WGoxK")
 
     @as_testnet
     def test_uncompressed_pubkey_in_segwit(self):

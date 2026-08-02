@@ -2,7 +2,8 @@
 export HOME=~
 set -eu
 
-TEST_SRK_CHANNELS=False
+# Litecoin's dust relay policy rejects Bitcoin's 330-satoshi anchor outputs.
+TEST_SRK_CHANNELS=${TEST_SRK_CHANNELS:-True}
 
 # alice -> bob -> carol
 
@@ -10,12 +11,12 @@ alice="./run_electrum --regtest -D /tmp/alice"
 bob="./run_electrum --regtest -D /tmp/bob"
 carol="./run_electrum --regtest -D /tmp/carol"
 
-bitcoin_cli="bitcoin-cli -rpcuser=doggman -rpcpassword=donkey -rpcport=18554 -regtest"
+litecoin_cli="litecoin-cli -rpcuser=doggman -rpcpassword=donkey -rpcport=19554 -regtest"
 
 function new_blocks()
 {
     printf "mining $1 blocks\n"
-    $bitcoin_cli generatetoaddress $1 $($bitcoin_cli getnewaddress) > /dev/null
+    $litecoin_cli generatetoaddress $1 $($litecoin_cli getnewaddress) > /dev/null
 }
 
 function wait_until_htlcs_settled()
@@ -131,7 +132,7 @@ function wait_until_spent()
     declare -i elapsed_sec=0
 
     while true; do
-        utxo=$($bitcoin_cli gettxout $1 $2)
+        utxo=$($litecoin_cli gettxout $1 $2)
         if [[ -z "$utxo" ]]; then break; fi  # utxo is spent (or never existed!)
         if ((elapsed_sec > timeout_sec)); then
             printf "Timeout of %i s exceeded\n" "$elapsed_sec"
@@ -154,7 +155,7 @@ function wait_for_chain_tip()
     declare -i elapsed_sec=0
 
     printf "$msg"
-    while (( $($cmd getinfo | jq '.blockchain_height') < $($bitcoin_cli getblockcount) )); do
+    while (( $($cmd getinfo | jq '.blockchain_height') < $($litecoin_cli getblockcount) )); do
         if ((elapsed_sec > timeout_sec)); then
             printf "Timeout of %i s exceeded\n" "$elapsed_sec"
             exit 1
@@ -170,7 +171,7 @@ function wait_for_chain_tip()
 
 function assert_utxo_exists()
 {
-    utxo=$($bitcoin_cli gettxout $1 $2)
+    utxo=$($litecoin_cli gettxout $1 $2)
     if [[ -z "$utxo" ]]; then
         echo "utxo $1:$2 does not exist"
         exit 1
@@ -199,7 +200,7 @@ if [[ $1 == "init" ]]; then
     $agent setconfig --offline test_force_disable_mpp True
     echo "funding $2"
     # note: changing the funding amount affects all tests, as they rely on "wait_for_balance"
-    $bitcoin_cli sendtoaddress $($agent getunusedaddress -o -w "/tmp/$2/regtest/wallets/default_wallet") 1
+    $litecoin_cli sendtoaddress $($agent getunusedaddress -o -w "/tmp/$2/regtest/wallets/default_wallet") 1
 fi
 
 if [[ $1 == "setconfig" ]]; then
@@ -242,7 +243,7 @@ if [[ $1 == "breach" ]]; then
     echo "alice pays again"
     $alice lnpay $request
     echo "alice broadcasts old ctx"
-    $bitcoin_cli sendrawtransaction $ctx
+    $litecoin_cli sendrawtransaction $ctx
     new_blocks 1
     wait_until_channel_state bob CLOSED
     new_blocks 1
@@ -614,7 +615,7 @@ if [[ $1 == "breach_with_unspent_htlc" ]]; then
         exit 1
     fi
     echo "alice breaches with old ctx"
-    $bitcoin_cli sendrawtransaction $ctx
+    $litecoin_cli sendrawtransaction $ctx
     new_blocks 1
     wait_for_balance bob 1.14
     # bob has now spent the htlc output with a justice tx. He must keep processing the
@@ -647,10 +648,10 @@ if [[ $1 == "breach_with_spent_htlc" ]]; then
     echo $($bob getbalance)
     echo "bob goes offline"
     $bob stop
-    ctx_id=$($bitcoin_cli sendrawtransaction $ctx)
+    ctx_id=$($litecoin_cli sendrawtransaction $ctx)
     echo "alice breaches with old ctx:" $ctx_id
     new_blocks 1
-    if [[ $($bitcoin_cli gettxout $ctx_id 0 | jq '.confirmations') != "1" ]]; then
+    if [[ $($litecoin_cli gettxout $ctx_id 0 | jq '.confirmations') != "1" ]]; then
         echo "breach tx not confirmed"
         exit 1
     fi
@@ -708,7 +709,7 @@ if [[ $1 == "watchtower" ]]; then
     echo "stopping alice and bob"
     $bob stop
     $alice stop
-    ctx_id=$($bitcoin_cli sendrawtransaction $ctx)
+    ctx_id=$($litecoin_cli sendrawtransaction $ctx)
     echo "alice breaches with old ctx:" $ctx_id
     echo "watchtower publishes justice transaction"
     if [ $TEST_SRK_CHANNELS != True ] ; then  # anchors

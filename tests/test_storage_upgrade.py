@@ -304,7 +304,7 @@ class TestStorageUpgrade(WalletTestCase):
         db = await self._upgrade_storage(wallet_str)
         wallet = Wallet(db, config=self.config)
         wallet.import_private_keys(
-            ["p2wpkh:L1cgMEnShp73r9iCukoPE3MogLeueNYRD9JVsfT1zVHyPBR3KqBY"],
+            ["p2wpkh:T7Swnz5d7C5eczM5TPkFSPuBdCJDiTZK2MCkjU5ZZTU8u4z4cHWn"],
             password=None
         )
         await wallet.stop()
@@ -340,7 +340,7 @@ class TestStorageUpgrade(WalletTestCase):
         wallet_str = self._get_wallet_str()
         db = await self._upgrade_storage(wallet_str)
         assert db.get("imported_channel_backups").get("ddb06b023f24a587d96a9f113c02d266549d010a57d7b151c1f5332a9bbaafd5") \
-            == "0200017e634853dc47f0bc2f2e0d1054b302fcb414371ddbd889f29ba8aa4e8b62c7725d472c7b642b14176f275d6dca60c8d1ec5cfbf935169f1fe873e6bd0ad155da038863cf8ab91046230f561cd5b386cbff8309fa02e3f0c3ed161a3aeb64a643b9d5afba9b2a33f5c151b1d7570a019d5466d2023c119f6ad987a5243f026bb0dd00003e74623171357a64726430703772366d68353961726e636179763030326e727530347030706636653264756b6479326833707672726e67747336687473616a02f2fa10e1317153b9cca5c0af211bcdd48aac4cf67a6f4d1cb7de71857261a1190303a53b5175b7ad2de558fc1f140d129fc5dd0949f1fbfac28ce2c33b236fbc6ef00390000e3230332e3133322e39342e313936072602a1ceaaae7b1da9d2e679977615988c62903e93a2e5d972aff6f0441face4be10c87b61e091f3f786ca44dc25283557214686d5ddb138eeb9df484145b991356b"
+            == "0200017e634853dc47f0bc2f2e0d1054b302fcb414371ddbd889f29ba8aa4e8b62c7725d472c7b642b14176f275d6dca60c8d1ec5cfbf935169f1fe873e6bd0ad155da038863cf8ab91046230f561cd5b386cbff8309fa02e3f0c3ed161a3aeb64a643b9d5afba9b2a33f5c151b1d7570a019d5466d2023c119f6ad987a5243f026bb0dd000040746c74633171357a64726430703772366d68353961726e636179763030326e727530347030706636653264756b6479326833707672726e677473393568337a6402f2fa10e1317153b9cca5c0af211bcdd48aac4cf67a6f4d1cb7de71857261a1190303a53b5175b7ad2de558fc1f140d129fc5dd0949f1fbfac28ce2c33b236fbc6ef00390000e3230332e3133322e39342e313936072602a1ceaaae7b1da9d2e679977615988c62903e93a2e5d972aff6f0441face4be10c87b61e091f3f786ca44dc25283557214686d5ddb138eeb9df484145b991356b"
 
     @as_testnet
     async def test_upgrade_removes_invoice_with_malformed_route_tag(self):
@@ -352,13 +352,13 @@ class TestStorageUpgrade(WalletTestCase):
         # the same way, so a file from before those versions upgrades too.
         # The malformed invoice below is correctly signed, but its 'r' payload has
         # non-zero padding bits; see TestBolt11._encode_invoice_with_raw_tag.
-        bad_r = ('lntb1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq8w3jhxaqrqzq'
-                 'pxhlj48td8uen6qqvke0kwsx0uf3g9pqfg3sdetumr2lla597ahcjcqcn5v7yycysc39ua9r2l8qx527'
-                 'uthxfdgmhp47exeh98pv7facqmjed87')
-        good = ('lntb15u1p0m6lzupp5zqjthgvaad9mewmdjuehwddyze9d8zyxcc43zhaddeegt37sndgsdq4xysyymr0vd'
-                '4kzcmrd9hx7cqp7xqrrss9qy9qsqsp5vlhcs24hwm747w8f3uau2tlrdkvjaglffnsstwyamj84cxuhrn2'
-                's8tut3jqumepu42azyyjpgqa4w9w03204zp9h4clk499y2umstl6s29hqyj8vv4as6zt5567ux7l3f66m8'
-                'pjhk65zjaq2esezk7ll2kcpljewkg')
+        bad_r = ('lntltc1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq8w3jhxaqrqzqpg'
+                 '5autgkssysex4f6x5qzr8ryt2vaul2grpyuzfxzcdqfa56qa355yekjj40etdn9tyfxxlerhalx38pngefsdp'
+                 'ut5n0lzc0jqzl428qqrxargp')
+        good = ('lntltc15u1p0m6lzupp5zqjthgvaad9mewmdjuehwddyze9d8zyxcc43zhaddeegt37sndgsdq4xysyymr0vd'
+                '4kzcmrd9hx7cqp7xqrrss9qy9qsqsp5vlhcs24hwm747w8f3uau2tlrdkvjaglffnsstwyamj84cxuhrn2s9g'
+                'czumfuy7aj9s3f4xlvq0dt5ythcjz6m6p7hrq69a0cjlpvjruranwu9c2xs2fn02tdj7ujwrng5m0y0vegule'
+                'rlaazwvww57cvlccpkq9lfg')
 
         def invoice_json(lightning_invoice):
             return {'amount_msat': None, 'message': 'mymsg', 'time': 1615922274, 'exp': 0,
@@ -368,7 +368,7 @@ class TestStorageUpgrade(WalletTestCase):
         data = {
             'seed_version': 72,
             'wallet_type': 'imported',
-            'addresses': {'tb1qmjzmg8nd4z56ar4fpngzsr6euktrhnjg9td385': {}},
+            'addresses': {'tltc1qmjzmg8nd4z56ar4fpngzsr6euktrhnjgur00ha': {}},
             'invoices': {'bad_r': invoice_json(bad_r),
                          'good': invoice_json(good)},
         }
@@ -395,13 +395,13 @@ class TestStorageUpgrade(WalletTestCase):
         # Same as the above, for the receive side: conversions 45, 47 and 51 each decode the
         # bolt11 str of stored payment_requests, and drop the ones that no longer decode.
         # (73 does not have to: a modern Request only stores the payment_hash.)
-        bad_r = ('lntb1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq8w3jhxaqrqzq'
-                 'pxhlj48td8uen6qqvke0kwsx0uf3g9pqfg3sdetumr2lla597ahcjcqcn5v7yycysc39ua9r2l8qx527'
-                 'uthxfdgmhp47exeh98pv7facqmjed87')
-        good = ('lntb15u1p0m6lzupp5zqjthgvaad9mewmdjuehwddyze9d8zyxcc43zhaddeegt37sndgsdq4xysyymr0vd'
-                '4kzcmrd9hx7cqp7xqrrss9qy9qsqsp5vlhcs24hwm747w8f3uau2tlrdkvjaglffnsstwyamj84cxuhrn2'
-                's8tut3jqumepu42azyyjpgqa4w9w03204zp9h4clk499y2umstl6s29hqyj8vv4as6zt5567ux7l3f66m8'
-                'pjhk65zjaq2esezk7ll2kcpljewkg')
+        bad_r = ('lntltc1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq8w3jhxaqrqzqpg'
+                 '5autgkssysex4f6x5qzr8ryt2vaul2grpyuzfxzcdqfa56qa355yekjj40etdn9tyfxxlerhalx38pngefsdp'
+                 'ut5n0lzc0jqzl428qqrxargp')
+        good = ('lntltc15u1p0m6lzupp5zqjthgvaad9mewmdjuehwddyze9d8zyxcc43zhaddeegt37sndgsdq4xysyymr0vd'
+                '4kzcmrd9hx7cqp7xqrrss9qy9qsqsp5vlhcs24hwm747w8f3uau2tlrdkvjaglffnsstwyamj84cxuhrn2s9g'
+                'czumfuy7aj9s3f4xlvq0dt5ythcjz6m6p7hrq69a0cjlpvjruranwu9c2xs2fn02tdj7ujwrng5m0y0vegule'
+                'rlaazwvww57cvlccpkq9lfg')
         good_rhash = '1024bba19deb4bbcbb6d97337735a4164ad38886c62b115fad6e7285c7d09b51'
 
         def request_json(seed_version, lightning_invoice):
@@ -419,7 +419,7 @@ class TestStorageUpgrade(WalletTestCase):
                 data = {
                     'seed_version': seed_version,
                     'wallet_type': 'imported',
-                    'addresses': {'tb1qmjzmg8nd4z56ar4fpngzsr6euktrhnjg9td385': {}},
+                    'addresses': {'tltc1qmjzmg8nd4z56ar4fpngzsr6euktrhnjgur00ha': {}},
                     'payment_requests': {'bad_r': request_json(seed_version, bad_r),
                                          good_rhash: request_json(seed_version, good)},
                 }

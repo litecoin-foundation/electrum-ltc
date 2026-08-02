@@ -36,20 +36,20 @@ class TestPaymentIdentifier(ElectrumTestCase):
         self.wallet2_path = os.path.join(self.electrum_path, "somewallet2")
 
     def test_maybe_extract_bech32_lightning_payment_identifier(self):
-        bolt11 = "lnbc1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsdqq9qypqszpyrpe4tym8d3q87d43cgdhhlsrt78epu7u99mkzttmt2wtsx0304rrw50addkryfrd3vn3zy467vxwlmf4uz7yvntuwjr2hqjl9lw5cqwtp2dy"
+        bolt11 = "lnltc1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsdqq9qypqszqzgtd6vmekfly93cnrul3772cx24w0l0cqka4cpywy9km3dxwq330e2k648zeknmxztfk84j4esx00nx79374q0wa444zydl402rh5cqgf65sq"
         lnurl = "lnurl1dp68gurn8ghj7um9wfmxjcm99e5k7telwy7nxenrxvmrgdtzxsenjcm98pjnwxq96s9"
         self.assertEqual(bolt11, maybe_extract_bech32_lightning_payment_identifier(f"{bolt11}".upper()))
-        self.assertEqual(bolt11, maybe_extract_bech32_lightning_payment_identifier(f"lightning:{bolt11}"))
-        self.assertEqual(bolt11, maybe_extract_bech32_lightning_payment_identifier(f"  lightning:{bolt11}   ".upper()))
+        self.assertEqual(bolt11, maybe_extract_bech32_lightning_payment_identifier(f"lightningltc:{bolt11}"))
+        self.assertEqual(bolt11, maybe_extract_bech32_lightning_payment_identifier(f"  lightningltc:{bolt11}   ".upper()))
         self.assertEqual(lnurl, maybe_extract_bech32_lightning_payment_identifier(lnurl))
-        self.assertEqual(lnurl, maybe_extract_bech32_lightning_payment_identifier(f"  lightning:{lnurl}   ".upper()))
+        self.assertEqual(lnurl, maybe_extract_bech32_lightning_payment_identifier(f"  lightningltc:{lnurl}   ".upper()))
 
         self.assertEqual(None, maybe_extract_bech32_lightning_payment_identifier(f"litecoin:{bolt11}"))
         self.assertEqual(None, maybe_extract_bech32_lightning_payment_identifier(f":{bolt11}"))
         self.assertEqual(None, maybe_extract_bech32_lightning_payment_identifier(f"garbage text"))
 
     def test_remove_uri_prefix(self):
-        lightning, bitcoin = 'lightning', 'bitcoin'
+        lightning, bitcoin = 'lightningltc', 'litecoin'
         tests = (
             (lightning, '', ''),
             (lightning, 'lightningltc:test', 'test'),
@@ -69,16 +69,16 @@ class TestPaymentIdentifier(ElectrumTestCase):
 
     def test_bolt11(self):
         # no amount, no fallback address
-        bolt11 = 'lnbc1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsr9yq20q82gphp2nflc7jtzrcazrra7wwgzxqc8u7754cdlpfrmccae92qgzqvzq2ps8pqqqqqqpqqqqq9qqqvpeuqafqxu92d8lr6fvg0r5gv0heeeqgcrqlnm6jhphu9y00rrhy4grqszsvpcgpy9qqqqqqgqqqqq7qqzqhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqs9qy9qsq9s2256hf3kmf539hhds9uh30expkc6ulzd29zatpz60g292lu85reau6e4zpdlchsg4eprgk96a82ejdlyhfqx684xdzzepklfx6r2cpga5nw2'
+        bolt11 = 'lnltc1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsr9yq20q82gphp2nflc7jtzrcazrra7wwgzxqc8u7754cdlpfrmccae92qgzqvzq2ps8pqqqqqqpqqqqq9qqqvpeuqafqxu92d8lr6fvg0r5gv0heeeqgcrqlnm6jhphu9y00rrhy4grqszsvpcgpy9qqqqqqgqqqqq7qqzqhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqs9qy9qsqdpq5eygqqx5m47qqdj6dq02echphtxhe98un5q2r9uzhg66pue3rj6f3d8mmwtttycnak60y35626rkhvca9kaejsv3czra7cscw99sqxa7cuk'
         for pi_str in [
             f'{bolt11}',
             f'  {bolt11}',
             f'{bolt11}  ',
-            f'lightning:{bolt11}',
-            f'  lightning:{bolt11}',
-            f'lightning:{bolt11}  ',
-            f'lightning:{bolt11.upper()}',
-            f'lightning:{bolt11}'.upper(),
+            f'lightningltc:{bolt11}',
+            f'  lightningltc:{bolt11}',
+            f'lightningltc:{bolt11}  ',
+            f'lightningltc:{bolt11.upper()}',
+            f'lightningltc:{bolt11}'.upper(),
         ]:
             pi = PaymentIdentifier(None, pi_str)
             self.assertTrue(pi.is_valid())
@@ -95,7 +95,7 @@ class TestPaymentIdentifier(ElectrumTestCase):
             self.assertFalse(pi.is_valid())
 
         # amount, fallback address
-        bolt_11_w_fallback = 'lnbc241ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsr9yq20q82gphp2nflc7jtzrcazrra7wwgzxqc8u7754cdlpfrmccae92qgzqvzq2ps8pqqqqqqpqqqqq9qqqvpeuqafqxu92d8lr6fvg0r5gv0heeeqgcrqlnm6jhphu9y00rrhy4grqszsvpcgpy9qqqqqqgqqqqq7qqzqfpp3qjmp7lwpagxun9pygexvgpjdc4jdj85fhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqs9qy9qsqfnk063vsrgjx7l6td6v42skuxql7epn5tmrl4qte2e78nqnsjlgjg3sgkxreqex5fw4c9chnvtc2hykqnyxr84zwfr8f3d9q3h0nfdgqenlzvj'
+        bolt_11_w_fallback = 'lnltc241ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsr9yq20q82gphp2nflc7jtzrcazrra7wwgzxqc8u7754cdlpfrmccae92qgzqvzq2ps8pqqqqqqpqqqqq9qqqvpeuqafqxu92d8lr6fvg0r5gv0heeeqgcrqlnm6jhphu9y00rrhy4grqszsvpcgpy9qqqqqqgqqqqq7qqzqfpp3qjmp7lwpagxun9pygexvgpjdc4jdj85fhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqs9qy9qsqr8k87557npyvh09gymtdx6p6s0f6aw5djakjvtzhcxu6akhg0nus8336gtm37fpt0462e5jckxzrwgfstm2ffmevrdfjta9j8h4y54gp5d5x9w'
 
         pi = PaymentIdentifier(None, bolt_11_w_fallback)
         self.assertTrue(pi.is_valid())
@@ -111,7 +111,7 @@ class TestPaymentIdentifier(ElectrumTestCase):
         self.assertFalse(pi.is_multiline())
 
     def test_bip21(self):
-        bip21 = 'litecoin:bc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqp8p2293?message=unit_test'
+        bip21 = 'litecoin:ltc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqpraswap?message=unit_test'
         for pi_str in [
             f'{bip21}',
             f'  {bip21}',
@@ -125,7 +125,7 @@ class TestPaymentIdentifier(ElectrumTestCase):
             self.assertIsNotNone(pi.bip21)
 
         # amount, expired, message
-        bip21 = 'litecoin:bc1qy7ps80x5csdqpfcekn97qfljxtg2lrya8826ds?amount=0.001&message=unit_test&time=1707382023&exp=3600'
+        bip21 = 'litecoin:ltc1qy7ps80x5csdqpfcekn97qfljxtg2lryarms74q?amount=0.001&message=unit_test&time=1707382023&exp=3600'
 
         pi = PaymentIdentifier(None, bip21)
         self.assertTrue(pi.is_available())
@@ -137,7 +137,7 @@ class TestPaymentIdentifier(ElectrumTestCase):
         self.assertEqual('unit_test', pi.bip21.get('message'))
 
         # amount, expired, message, lightning w matching amount
-        bip21 = 'litecoin:1RustyRX2oai4EYYDpQGWvEL62BBGqN9T?amount=0.001&message=unit_test&time=1707382023&exp=3600&lightning=lnbc1m1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsdq5xysxxatsyp3k7enxv4jsxqzpu9qy9qsqw8l2pulslacwjt86vle3sgfdmcct5v34gtcpfnujsf6ufqa7v7jzdpddnwgte82wkscdlwfwucrgn8z36rv9hzk5mukltteh0yqephqpk5vegu'
+        bip21 = 'litecoin:LKes97HFbh3dxrvhiMohYXyzYJPTK37n7u?amount=0.001&message=unit_test&time=1707382023&exp=3600&lightningltc=lnltc1m1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsdq5xysxxatsyp3k7enxv4jsxqzpu9qy9qsqrk5p227neujjnf8pna3law67zuqtq7w37ja37tkwytmzum80dnk8gc3ewlv7xpmjhsw5av7t0sfwqpvl0wes95cwqlsx7c43vadkwfgpe7axap'
 
         pi = PaymentIdentifier(None, bip21)
         self.assertTrue(pi.is_available())
@@ -150,21 +150,21 @@ class TestPaymentIdentifier(ElectrumTestCase):
         self.assertEqual('unit_test', pi.bip21.get('message'))
 
         # amount, expired, message, lightning w non-matching amount
-        bip21 = 'litecoin:1RustyRX2oai4EYYDpQGWvEL62BBGqN9T?amount=0.01&message=unit_test&time=1707382023&exp=3600&lightning=lnbc20m1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqsfpp3qjmp7lwpagxun9pygexvgpjdc4jdj85fr9yq20q82gphp2nflc7jtzrcazrra7wwgzxqc8u7754cdlpfrmccae92qgzqvzq2ps8pqqqqqqpqqqqq9qqqvpeuqafqxu92d8lr6fvg0r5gv0heeeqgcrqlnm6jhphu9y00rrhy4grqszsvpcgpy9qqqqqqgqqqqq7qqzqj9n4evl6mr5aj9f58zp6fyjzup6ywn3x6sk8akg5v4tgn2q8g4fhx05wf6juaxu9760yp46454gpg5mtzgerlzezqcqvjnhjh8z3g2qqdhhwkj'
+        bip21 = 'litecoin:LKes97HFbh3dxrvhiMohYXyzYJPTK37n7u?amount=0.01&message=unit_test&time=1707382023&exp=3600&lightningltc=lnltc20m1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqsfpp3qjmp7lwpagxun9pygexvgpjdc4jdj85fr9yq20q82gphp2nflc7jtzrcazrra7wwgzxqc8u7754cdlpfrmccae92qgzqvzq2ps8pqqqqqqpqqqqq9qqqvpeuqafqxu92d8lr6fvg0r5gv0heeeqgcrqlnm6jhphu9y00rrhy4grqszsvpcgpy9qqqqqqgqqqqq7qqzqdawnkw3dr9zrh4v0u6ad97nx3hqsw7als037v3h9m3hzzw77c9unq8uhqel5dvtrqexu08200f2alk6ul0skh3q3jag0gvr9z46xxlcpcjry0w'
 
         pi = PaymentIdentifier(None, bip21)
         self.assertFalse(pi.is_valid())
 
         # amount bounds
-        bip21 = 'litecoin:1RustyRX2oai4EYYDpQGWvEL62BBGqN9T?amount=-1'
+        bip21 = 'litecoin:LKes97HFbh3dxrvhiMohYXyzYJPTK37n7u?amount=-1'
         pi = PaymentIdentifier(None, bip21)
         self.assertFalse(pi.is_valid())
 
-        bip21 = 'litecoin:1RustyRX2oai4EYYDpQGWvEL62BBGqN9T?amount=21000001'
+        bip21 = 'litecoin:LKes97HFbh3dxrvhiMohYXyzYJPTK37n7u?amount=84000001'
         pi = PaymentIdentifier(None, bip21)
         self.assertFalse(pi.is_valid())
 
-        bip21 = 'litecoin:1RustyRX2oai4EYYDpQGWvEL62BBGqN9T?amount=0'
+        bip21 = 'litecoin:LKes97HFbh3dxrvhiMohYXyzYJPTK37n7u?amount=0'
         pi = PaymentIdentifier(None, bip21)
         self.assertFalse(pi.is_valid())
 
@@ -178,8 +178,8 @@ class TestPaymentIdentifier(ElectrumTestCase):
         self.assertTrue(pi.need_resolve())
         self.assertEqual(PaymentIdentifierState.NEED_RESOLVE, pi.state)
 
-        # Test with lightning: prefix
-        lightning_lnurl = f'lightning:{valid_lnurl}'
+        # Test with lightningltc: prefix
+        lightning_lnurl = f'lightningltc:{valid_lnurl}'
         pi = PaymentIdentifier(None, lightning_lnurl)
         self.assertTrue(pi.is_valid())
         self.assertEqual(PaymentIdentifierType.LNURL, pi.type)
@@ -288,8 +288,8 @@ class TestPaymentIdentifier(ElectrumTestCase):
 
     def test_multiline(self):
         pi_str = '\n'.join([
-            'bc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqp8p2293,0.01',
-            'bc1q66ex4c3vek4cdmrfjxtssmtguvs3r30pf42jpj,0.01',
+            'ltc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqpraswap,0.01',
+            'ltc1q66ex4c3vek4cdmrfjxtssmtguvs3r30pdfskez,0.01',
         ])
         pi = PaymentIdentifier(self.wallet, pi_str)
         self.assertTrue(pi.is_valid())
@@ -303,9 +303,9 @@ class TestPaymentIdentifier(ElectrumTestCase):
         self.assertEqual(pi_str, outputs_to_multiline_csv(pi.multiline_outputs, self.config))
 
         pi_str = '\n'.join([
-            'bc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqp8p2293,0.01',
-            'bc1q66ex4c3vek4cdmrfjxtssmtguvs3r30pf42jpj,0.01',
-            'bc1qy7ps80x5csdqpfcekn97qfljxtg2lrya8826ds,!',
+            'ltc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqpraswap,0.01',
+            'ltc1q66ex4c3vek4cdmrfjxtssmtguvs3r30pdfskez,0.01',
+            'ltc1qy7ps80x5csdqpfcekn97qfljxtg2lryarms74q,!',
         ])
         pi = PaymentIdentifier(self.wallet, pi_str)
         self.assertTrue(pi.is_valid())
@@ -320,9 +320,9 @@ class TestPaymentIdentifier(ElectrumTestCase):
         self.assertEqual(pi_str, outputs_to_multiline_csv(pi.multiline_outputs, self.config))
 
         pi_str = '\n'.join([
-            'bc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqp8p2293,0.01',
-            'bc1q66ex4c3vek4cdmrfjxtssmtguvs3r30pf42jpj,2!',
-            'bc1qy7ps80x5csdqpfcekn97qfljxtg2lrya8826ds,3!',
+            'ltc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqpraswap,0.01',
+            'ltc1q66ex4c3vek4cdmrfjxtssmtguvs3r30pdfskez,2!',
+            'ltc1qy7ps80x5csdqpfcekn97qfljxtg2lryarms74q,3!',
         ])
         pi = PaymentIdentifier(self.wallet, pi_str)
         self.assertTrue(pi.is_valid())
@@ -336,7 +336,7 @@ class TestPaymentIdentifier(ElectrumTestCase):
         self.assertEqual('3!', pi.multiline_outputs[2].value)
 
         pi_str = '\n'.join([
-            'bc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqp8p2293,0.01',
+            'ltc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqpraswap,0.01',
             'script(OP_RETURN baddc0ffee),0',
             'script(OP_0 OP_1NEGATE OP_16 ' + 'aa' * 80 + ' ' + 'bb' * 300 + '),0',  # every push encoding
         ])
@@ -353,7 +353,7 @@ class TestPaymentIdentifier(ElectrumTestCase):
 
         # disallow negative output values
         pi_str = '\n'.join([
-            'bc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqp8p2293,-0.01',
+            'ltc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqpraswap,-0.01',
         ])
         pi = PaymentIdentifier(self.wallet, pi_str)
         self.assertFalse(pi.is_valid())
@@ -361,7 +361,7 @@ class TestPaymentIdentifier(ElectrumTestCase):
         self.assertIsNotNone(pi.error)
 
     def test_spk(self):
-        address = 'bc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqp8p2293'
+        address = 'ltc1qj3zx2zc4rpv3npzmznxhdxzn0wm7pzqpraswap'
         for pi_str in [
             f'{address}',
             f'  {address}',
@@ -404,11 +404,11 @@ class TestPaymentIdentifier(ElectrumTestCase):
             'lnbcuser@some.domain',
             'lnurluser@some.domain',
             'bc1quser@some.domain',
-            'lightning:user@some.domain',
-            'lightning:user@some.weird.but.valid.domain',
-            'lightning:lnbcuser@some.domain',
-            'lightning:lnurluser@some.domain',
-            'lightning:bc1quser@some.domain',
+            'lightningltc:user@some.domain',
+            'lightningltc:user@some.weird.but.valid.domain',
+            'lightningltc:lnbcuser@some.domain',
+            'lightningltc:lnurluser@some.domain',
+            'lightningltc:bc1quser@some.domain',
         )
         for pi_str in email_pi_strings:
             pi = PaymentIdentifier(None, pi_str)
@@ -419,7 +419,7 @@ class TestPaymentIdentifier(ElectrumTestCase):
 
     async def test_invoice_from_payment_identifier(self):
         # amount, expired, message, lightning w matching amount
-        bip21 = 'litecoin:1RustyRX2oai4EYYDpQGWvEL62BBGqN9T?amount=0.001&message=unit_test&time=1707382023&exp=3600&lightning=lnbc1m1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsdq5xysxxatsyp3k7enxv4jsxqzpu9qy9qsqw8l2pulslacwjt86vle3sgfdmcct5v34gtcpfnujsf6ufqa7v7jzdpddnwgte82wkscdlwfwucrgn8z36rv9hzk5mukltteh0yqephqpk5vegu'
+        bip21 = 'litecoin:LKes97HFbh3dxrvhiMohYXyzYJPTK37n7u?amount=0.001&message=unit_test&time=1707382023&exp=3600&lightningltc=lnltc1m1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsdq5xysxxatsyp3k7enxv4jsxqzpu9qy9qsqrk5p227neujjnf8pna3law67zuqtq7w37ja37tkwytmzum80dnk8gc3ewlv7xpmjhsw5av7t0sfwqpvl0wes95cwqlsx7c43vadkwfgpe7axap'
 
         pi = PaymentIdentifier(None, bip21)
         invoice = invoice_from_payment_identifier(pi, None, None)
@@ -432,14 +432,14 @@ class TestPaymentIdentifier(ElectrumTestCase):
         wallet2 = d['wallet']  # type: Standard_Wallet
 
         # no amount bip21+lightning, MAX amount passed
-        bip21 = 'litecoin:1RustyRX2oai4EYYDpQGWvEL62BBGqN9T?message=unit_test&time=1707382023&exp=3600&lightning=lnbc1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsdqq9qypqszpyrpe4tym8d3q87d43cgdhhlsrt78epu7u99mkzttmt2wtsx0304rrw50addkryfrd3vn3zy467vxwlmf4uz7yvntuwjr2hqjl9lw5cqwtp2dy'
+        bip21 = 'litecoin:LKes97HFbh3dxrvhiMohYXyzYJPTK37n7u?message=unit_test&time=1707382023&exp=3600&lightningltc=lnltc1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsdqq9qypqszqzgtd6vmekfly93cnrul3772cx24w0l0cqka4cpywy9km3dxwq330e2k648zeknmxztfk84j4esx00nx79374q0wa444zydl402rh5cqgf65sq'
         pi = PaymentIdentifier(None, bip21)
         invoice = invoice_from_payment_identifier(pi, wallet2, '!')
         self.assertTrue(isinstance(invoice, Invoice))
         self.assertFalse(invoice.is_lightning())
 
         # no amount lightning, MAX amount passed -> expect raise
-        bolt11 = 'lightning:lnbc1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsdqq9qypqszpyrpe4tym8d3q87d43cgdhhlsrt78epu7u99mkzttmt2wtsx0304rrw50addkryfrd3vn3zy467vxwlmf4uz7yvntuwjr2hqjl9lw5cqwtp2dy'
+        bolt11 = 'lightningltc:lnltc1ps9zprzpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygsdqq9qypqszqzgtd6vmekfly93cnrul3772cx24w0l0cqka4cpywy9km3dxwq330e2k648zeknmxztfk84j4esx00nx79374q0wa444zydl402rh5cqgf65sq'
         pi = PaymentIdentifier(None, bolt11)
         with self.assertRaises(AssertionError):
             invoice_from_payment_identifier(pi, wallet2, '!')
