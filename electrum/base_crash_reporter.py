@@ -52,7 +52,7 @@ class CrashReportResponse(NamedTuple):
 
 
 class BaseCrashReporter(Logger):
-    report_server = "https://crashhub.electrum.org"
+    report_server = "https://crashhub.electrum-ltc.org"
     issue_template = """<h2>Traceback</h2>
 <pre>
 {traceback}
@@ -95,8 +95,8 @@ class BaseCrashReporter(Logger):
             "f043",  # testnet 4
             "1ef6",  # signet
         ]
-        is_forked_codebase = not bitcoinlike_genesis or "/spesmilo/" not in constants.GIT_REPO_URL
-        if is_forked_codebase and ".electrum.org" in BaseCrashReporter.report_server:
+        is_forked_codebase = not bitcoinlike_genesis or "/litecoin-foundation/" not in constants.GIT_REPO_URL
+        if is_forked_codebase and ".electrum-ltc.org" in BaseCrashReporter.report_server:
             # Some kind of altcoin wants to send us crash reports... ?
             # - You, the reader, yes *you*: if you forked the codebase e.g. to support an altcoin,
             #   please consider that upstream Electrum does NOT want to receive automated crash reports

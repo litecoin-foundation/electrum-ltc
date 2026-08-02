@@ -1,4 +1,4 @@
-# Electrum - Lightweight Bitcoin client
+# Electrum - Lightweight Litecoin client
 
 ```
 Licence: MIT Licence
@@ -7,8 +7,8 @@ Language: Python (>= 3.10)
 Homepage: https://electrum.org/
 ```
 
-[![Build Status](https://github.com/spesmilo/electrum/actions/workflows/builds.yml/badge.svg?branch=master)](https://github.com/spesmilo/electrum/actions/workflows/builds.yml)
-[![Test coverage statistics](https://coveralls.io/repos/github/spesmilo/electrum/badge.svg?branch=master)](https://coveralls.io/github/spesmilo/electrum?branch=master)
+[![Build Status](https://github.com/litecoin-foundation/electrum-ltc/actions/workflows/builds.yml/badge.svg?branch=master)](https://github.com/litecoin-foundation/electrum-ltc/actions/workflows/builds.yml)
+[![Test coverage statistics](https://coveralls.io/repos/github/litecoin-foundation/electrum-ltc/badge.svg?branch=master)](https://coveralls.io/github/litecoin-foundation/electrum-ltc?branch=master)
 [![Help translate Electrum online](https://d322cqt584bo4o.cloudfront.net/electrum/localized.svg)](https://crowdin.com/project/electrum)
 
 
@@ -104,8 +104,8 @@ and [for macOS](contrib/osx/README_macos.md))_
 
 Check out the code from GitHub:
 ```
-$ git clone https://github.com/spesmilo/electrum.git
-$ cd electrum
+$ git clone https://github.com/litecoin-foundation/electrum-ltc.git
+$ cd electrum-ltc
 $ git submodule update --init
 ```
 
@@ -155,7 +155,7 @@ Implementing new features, or improving/refactoring the codebase, is of course
 also welcome, but to avoid wasted effort, especially for larger changes,
 we encourage discussing these on the issue tracker or IRC first.
 
-Besides [GitHub](https://github.com/spesmilo/electrum),
+Besides [GitHub](https://github.com/litecoin-foundation/electrum-ltc),
 most communication about Electrum development happens on IRC, in the
 `#electrum` channel on Libera Chat. The easiest way to participate on IRC is
 with the web client, [web.libera.chat](https://web.libera.chat/#electrum).

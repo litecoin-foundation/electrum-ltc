@@ -15,7 +15,7 @@ similar system.
     (worth reading even if you already have docker)
 
     Note: older versions of Docker might not work well
-    (see [#6971](https://github.com/spesmilo/electrum/issues/6971)).
+    (see [#6971](https://github.com/litecoin-foundation/electrum-ltc/issues/6971)).
     If having problems, try to upgrade to at least `docker 20.10`.
 
 2. Build Windows binaries

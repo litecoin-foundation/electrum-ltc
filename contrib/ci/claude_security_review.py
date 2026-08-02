@@ -19,7 +19,7 @@ Environment variables:
         PR_NUMBER                -- PR number (empty if not a PR build)
         BASE_BRANCH              -- target branch of the PR
     Set by GitHub Actions runtime:
-        GITHUB_REPOSITORY        -- e.g. "spesmilo/electrum"
+        GITHUB_REPOSITORY        -- e.g. "litecoin-foundation/electrum-ltc"
         GITHUB_RUN_ID            -- current workflow run ID
         GITHUB_SERVER_URL        -- e.g. "https://github.com"
 """

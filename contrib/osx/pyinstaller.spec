@@ -135,8 +135,8 @@ app = BUNDLE(
         'NSSupportsAutomaticGraphicsSwitching': 'True',
         'CFBundleURLTypes':
             [{
-                'CFBundleURLName': 'bitcoin',
-                'CFBundleURLSchemes': ['bitcoin', 'lightning', 'lnurlp', 'lnurlw', ],
+                'CFBundleURLName': 'litecoin',
+                'CFBundleURLSchemes': ['litecoin', 'lightningltc', 'lnurlp', 'lnurlw', ],
             }],
         'LSMinimumSystemVersion': '11',
         'NSCameraUsageDescription': 'Electrum would like to access the camera to scan for QR codes',

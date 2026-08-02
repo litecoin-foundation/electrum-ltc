@@ -89,7 +89,7 @@ Let brew install the Xcode CLI tools.
 
 #### 2. Build Electrum
 
-    cd electrum
+    cd electrum-ltc
     ./contrib/osx/make_osx.sh
 
 This creates both a folder named Electrum.app and the .dmg file (both unsigned).

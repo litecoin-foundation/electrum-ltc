@@ -9,8 +9,8 @@
 
 ### 1. Check out the code from GitHub:
 ```
-> git clone https://github.com/spesmilo/electrum.git
-> cd electrum
+> git clone https://github.com/litecoin-foundation/electrum-ltc.git
+> cd electrum-ltc
 > git submodule update --init
 ```
 
@@ -63,4 +63,3 @@ for discussion)
 ```
 > python3 ./run_electrum
 ```
-

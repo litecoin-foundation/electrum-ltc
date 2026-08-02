@@ -12,7 +12,7 @@ Features:
 • Cold Storage: Keep your private keys offline and go online with a watching-only wallet.
 
 Links:
-• Website: https://electrum.org  (with documentation and FAQ)
-• Source code: https://github.com/spesmilo/electrum
+• Website: https://electrum-ltc.org  (with documentation and FAQ)
+• Source code: https://github.com/litecoin-foundation/electrum-ltc
 • Help us with translations: https://crowdin.com/project/electrum
 • Support: Please use GitHub (preferred) or email electrumdev@gmail.com to report bugs rather than the app rating system.
