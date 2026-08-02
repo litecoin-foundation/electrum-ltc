@@ -5,4 +5,5 @@ PyQt6<6.7
 PyQt6-Qt6<6.7,!=6.6.3
 
 cryptography>=2.6
-scrypt>=0.6.0
+# Later releases omit the Python 3.12 macOS x86_64 wheel required by make_osx.sh.
+scrypt>=0.6.0,<0.8.25
