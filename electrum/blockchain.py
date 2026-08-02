@@ -99,8 +99,8 @@ def hash_raw_header(header: bytes) -> str:
     return hash_encode(sha256d(header))
 
 
-def pow_hash_header(header):
-    return hash_encode(getPoWHash(bfh(serialize_header(header))))
+def pow_hash_header(header: dict) -> str:
+    return hash_encode(getPoWHash(serialize_header(header)))
 
 
 # block hash -> chain work; up to and including that block
