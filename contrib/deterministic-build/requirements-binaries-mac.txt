@@ -178,6 +178,8 @@ PyQt6-sip==13.11.1 \
     --hash=sha256:dd8be768799be1a29857ea0125b1d365021a8a014c1d746f0df6b7ba0400edef \
     --hash=sha256:f532144c43f2fddcccf2e25df50cdb4a744edb4ce4ba5ed2d0f2cef825197f2f \
     --hash=sha256:fcadd68e09ee24cdda8f8bfcba52e59c9b297055d2c450f0eb89afa61a8dc31a
+scrypt==0.9.4 \
+    --hash=sha256:0d212010ba8c2e55475ba6258f30cee4da0432017514d8f6e855b7f1f8c55c77
 setuptools==80.9.0 \
     --hash=sha256:062d34222ad13e0cc312a4c02d73f059e86a4acbfbdea8f8f76b28c99f306922 \
     --hash=sha256:f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c
