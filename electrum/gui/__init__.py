@@ -6,6 +6,9 @@
 
 from typing import TYPE_CHECKING, Mapping, Optional
 
+
+LIGHTNING_UI_ENABLED = False
+
 if TYPE_CHECKING:
     from . import qt
     from electrum.simple_config import SimpleConfig

@@ -9,6 +9,7 @@ from functools import partial
 from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject, QTimer
 
 from electrum.i18n import _
+from electrum.gui import LIGHTNING_UI_ENABLED
 from electrum.invoices import InvoiceError, PR_PAID, PR_BROADCASTING, PR_BROADCAST
 from electrum.logging import get_logger
 from electrum.network import TxBroadcastError, BestEffortRequestFailed
@@ -349,7 +350,7 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
     isLightningChanged = pyqtSignal()
     @pyqtProperty(bool, notify=isLightningChanged)
     def isLightning(self):
-        return bool(self.wallet.lnworker)
+        return LIGHTNING_UI_ENABLED and bool(self.wallet.lnworker)
 
     billingInfoChanged = pyqtSignal()
     @pyqtProperty('QVariantMap', notify=billingInfoChanged)
@@ -360,7 +361,7 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
 
     @pyqtProperty(bool, notify=dataChanged)
     def canHaveLightning(self):
-        return self.wallet.can_have_lightning()
+        return LIGHTNING_UI_ENABLED and self.wallet.can_have_lightning()
 
     @pyqtProperty(str, notify=dataChanged)
     def walletType(self):
@@ -542,6 +543,8 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
 
     @pyqtSlot()
     def enableLightning(self):
+        if not LIGHTNING_UI_ENABLED:
+            return
         self.wallet.init_lightning(password=self.password)
         self.isLightningChanged.emit()
         self.dataChanged.emit()
@@ -847,14 +850,19 @@ class QEWallet(AuthMixin, QObject, QtEventListener):
     @pyqtSlot(result='QVariantMap')
     def getBalancesForPiechart(self):
         p_bal = self.wallet.get_balances_for_piechart()
+        lightning = int(p_bal.lightning) if LIGHTNING_UI_ENABLED else 0
+        lightning_frozen = int(p_bal.lightning_frozen) if LIGHTNING_UI_ENABLED else 0
         return {
             'confirmed': p_bal.confirmed,
             'unconfirmed': p_bal.unconfirmed,
             'unmatured': p_bal.unmatured,
             'frozen': p_bal.frozen,
-            'lightning': int(p_bal.lightning),
-            'f_lightning': int(p_bal.lightning_frozen),
-            'total': int(p_bal.total())
+            'lightning': lightning,
+            'f_lightning': lightning_frozen,
+            'total': (
+                p_bal.confirmed + p_bal.unconfirmed + p_bal.unmatured + p_bal.frozen
+                + lightning + lightning_frozen
+            ),
         }
 
     @pyqtSlot(str, result=bool)

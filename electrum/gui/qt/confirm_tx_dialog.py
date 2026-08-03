@@ -43,6 +43,7 @@ from electrum.bitcoin import DummyAddress
 from electrum.fee_policy import FeePolicy, FixedFeePolicy, FeeMethod
 from electrum.logging import Logger
 from electrum.submarine_swaps import NostrTransport, SwapServerError
+from electrum.gui import LIGHTNING_UI_ENABLED
 from electrum.gui.messages import MSG_SUBMARINE_PAYMENT_HELP_TEXT
 
 from electrum.gui.common_qt.util import qt_event_listener
@@ -189,7 +190,8 @@ class TxEditor(WindowModalDialog, SubmarineSwapMixin, Logger):
         return self._base_tx is not None
 
     def send_change_to_lightning_available(self) -> bool:
-        return self.config.WALLET_SEND_CHANGE_TO_LIGHTNING and self.context == TxEditorContext.PAYMENT
+        return (LIGHTNING_UI_ENABLED and self.config.WALLET_SEND_CHANGE_TO_LIGHTNING
+                and self.context == TxEditorContext.PAYMENT)
 
     def timer_actions(self):
         if self.needs_update:
@@ -315,7 +317,7 @@ class TxEditor(WindowModalDialog, SubmarineSwapMixin, Logger):
         self.tab_widget.removeTab(self.tab_widget.indexOf(self.submarine_payment_tab))
 
         allow_swaps = self.context == TxEditorContext.PAYMENT and self.payee_outputs and self.swap_manager
-        if self.config.WALLET_ENABLE_SUBMARINE_PAYMENTS and allow_swaps:
+        if LIGHTNING_UI_ENABLED and self.config.WALLET_ENABLE_SUBMARINE_PAYMENTS and allow_swaps:
             i = self.tab_widget.addTab(self.submarine_payment_tab, _('Submarine Payment'))
             tooltip = self.config.cv.WALLET_ENABLE_SUBMARINE_PAYMENTS.get_long_desc()
             if len(self.payee_outputs) > 1:
@@ -515,25 +517,26 @@ class TxEditor(WindowModalDialog, SubmarineSwapMixin, Logger):
 
         self.pref_menu.addSeparator()
 
-        can_have_lightning = self.wallet.can_have_lightning()
-        ln_config_items = []
-        if self.context == TxEditorContext.PAYMENT:
-            ln_config_items.append(self.pref_menu.addConfig(
-                self.config.cv.WALLET_SEND_CHANGE_TO_LIGHTNING,
-                callback=lambda: (self.prepare_swap_transport(), self.trigger_update()),  # type: ignore
-                checked=False if not can_have_lightning else None,
-            ))
-            ln_config_items.append(self.pref_menu.addConfig(
-                self.config.cv.WALLET_ENABLE_SUBMARINE_PAYMENTS,
-                callback=self.update_tab_visibility,
-                checked=False if not can_have_lightning else None,
-            ))
-        if not can_have_lightning:  # disable the buttons and override tooltip
-            ln_unavailable_msg = _("Not available for this wallet.") \
-                                 + "\n" + _("Requires a wallet with Lightning network support.")
-            for ln_conf in ln_config_items:
-                ln_conf.setEnabled(False)
-                ln_conf.setToolTip(ln_unavailable_msg)
+        if LIGHTNING_UI_ENABLED:
+            can_have_lightning = self.wallet.can_have_lightning()
+            ln_config_items = []
+            if self.context == TxEditorContext.PAYMENT:
+                ln_config_items.append(self.pref_menu.addConfig(
+                    self.config.cv.WALLET_SEND_CHANGE_TO_LIGHTNING,
+                    callback=lambda: (self.prepare_swap_transport(), self.trigger_update()),  # type: ignore
+                    checked=False if not can_have_lightning else None,
+                ))
+                ln_config_items.append(self.pref_menu.addConfig(
+                    self.config.cv.WALLET_ENABLE_SUBMARINE_PAYMENTS,
+                    callback=self.update_tab_visibility,
+                    checked=False if not can_have_lightning else None,
+                ))
+            if not can_have_lightning:  # disable the buttons and override tooltip
+                ln_unavailable_msg = _("Not available for this wallet.") \
+                                     + "\n" + _("Requires a wallet with Lightning network support.")
+                for ln_conf in ln_config_items:
+                    ln_conf.setEnabled(False)
+                    ln_conf.setToolTip(ln_unavailable_msg)
 
         self.pref_menu.addToggle(
             _('Use change addresses'),

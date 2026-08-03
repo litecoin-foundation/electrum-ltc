@@ -32,6 +32,7 @@ from PyQt6.QtGui import QStandardItemModel, QStandardItem, QFont
 from PyQt6.QtWidgets import QAbstractItemView, QMenu
 
 from electrum.i18n import _
+from electrum.gui import LIGHTNING_UI_ENABLED
 from electrum.bitcoin import is_address
 from electrum.transaction import PartialTxInput, PartialTxOutput
 from electrum.lnutil import MIN_FUNDING_SAT
@@ -331,10 +332,11 @@ class UTXOList(MyTreeView):
         m.setEnabled(bool(unfrozen_coins))
         m = menu_spend.addAction(_("send to address in clipboard"), lambda: self.pay_to_clipboard_address(unfrozen_coins))
         m.setEnabled(self.clipboard_contains_address())
-        m = menu_spend.addAction(_("in new channel"), lambda: self.open_channel_with_coins(unfrozen_coins))
-        m.setEnabled(self.can_open_channel(unfrozen_coins))
-        m = menu_spend.addAction(_("in submarine swap"), lambda: self.swap_coins(unfrozen_coins))
-        m.setEnabled(self.can_swap_coins(unfrozen_coins))
+        if LIGHTNING_UI_ENABLED:
+            m = menu_spend.addAction(_("in new channel"), lambda: self.open_channel_with_coins(unfrozen_coins))
+            m.setEnabled(self.can_open_channel(unfrozen_coins))
+            m = menu_spend.addAction(_("in submarine swap"), lambda: self.swap_coins(unfrozen_coins))
+            m.setEnabled(self.can_swap_coins(unfrozen_coins))
         # coin control
         if self.are_in_coincontrol(coins):
             menu.addAction(_("Remove from coin control"), lambda: self.remove_from_coincontrol(coins))

@@ -77,7 +77,7 @@ ElDialog {
         data = data.trim()
         if (bitcoin.isRawTx(data)) {
             txFound(data)
-        } else if (Daemon.currentWallet.isValidChannelBackup(data)) {
+        } else if (Daemon.currentWallet.isLightning && Daemon.currentWallet.isValidChannelBackup(data)) {
             channelBackupFound(data)
         } else {
             piResolver.recipient = data

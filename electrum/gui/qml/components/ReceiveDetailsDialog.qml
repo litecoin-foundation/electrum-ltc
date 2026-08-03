@@ -106,6 +106,7 @@ ElDialog {
                 onClicked: { dialog.isLightning = false; doAccept() }
             }
             FlatButton {
+                visible: Daemon.currentWallet.isLightning
                 Layout.fillWidth: true
                 Layout.preferredWidth: 1
                 enabled: Daemon.currentWallet.isLightning && (Daemon.currentWallet.lightningCanReceive.satsInt

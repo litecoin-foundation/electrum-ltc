@@ -4,7 +4,7 @@ import org.electrum 1.0
 
 Item {
     id: root
-    visible: Config.useGossip
+    visible: Daemon.currentWallet && Daemon.currentWallet.isLightning && Config.useGossip
     implicitWidth: constants.iconSizeMedium
     implicitHeight: constants.iconSizeMedium
 

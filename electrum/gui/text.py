@@ -13,7 +13,7 @@ try:
 except ImportError:  # only use vendored lib as fallback, to allow Linux distros to bring their own
     from electrum._vendor import pyperclip
 
-from electrum.gui import BaseElectrumGui
+from electrum.gui import BaseElectrumGui, LIGHTNING_UI_ENABLED
 from electrum.bip21 import parse_bip21_URI
 from electrum.util import format_time
 from electrum.util import EventListener, event_listener
@@ -233,7 +233,8 @@ class ElectrumGui(BaseElectrumGui, EventListener):
         self.add_edit_line(7, 2, _("Expiry"), self.str_recv_expiry, 15)
         self.add_button(9, 15, _("[Clear]"), self.do_clear_request)
         self.add_button(9, 25, _("[Onchain]"), lambda: self.do_create_request(lightning=False))
-        self.add_button(9, 35, _("[Lightning]"), lambda: self.do_create_request(lightning=True))
+        if LIGHTNING_UI_ENABLED:
+            self.add_button(9, 35, _("[Lightning]"), lambda: self.do_create_request(lightning=True))
         self.print_requests_list(13, 2, offset_pos=6)
         return
 
@@ -561,6 +562,8 @@ class ElectrumGui(BaseElectrumGui, EventListener):
         self.str_description = ''
 
     def do_create_request(self, lightning: bool):
+        if lightning and not LIGHTNING_UI_ENABLED:
+            return
         amount_sat = self.parse_amount(self.str_recv_amount) or 0
         if not lightning:
             if amount_sat and amount_sat < self.wallet.dust_threshold():
@@ -663,7 +666,9 @@ class ElectrumGui(BaseElectrumGui, EventListener):
         self.do_pay_invoice(invoice)
 
     def do_pay_invoice(self, invoice):
-        if invoice.is_lightning():
+        if invoice.is_lightning() and not LIGHTNING_UI_ENABLED:
+            self.show_message(_('Lightning is disabled'))
+        elif invoice.is_lightning():
             self.pay_lightning_invoice(invoice)
         else:
             self.pay_onchain_dialog(invoice)

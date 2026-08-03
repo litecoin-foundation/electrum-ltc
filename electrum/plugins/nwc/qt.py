@@ -35,6 +35,7 @@ from PyQt6.QtGui import QPixmap, QImage
 from PyQt6.QtCore import Qt, QTimer
 
 from electrum.i18n import _
+from electrum.gui import LIGHTNING_UI_ENABLED
 from electrum.plugin import hook
 from electrum.gui.qt.util import (
     WindowModalDialog, Buttons, OkButton, CancelButton, CloseButton,
@@ -62,6 +63,8 @@ class Plugin(NWCServerPlugin):
 
     @hook
     def init_menubar(self, window):
+        if not LIGHTNING_UI_ENABLED:
+            return
         ma = window.wallet_menu.addAction('Nostr Wallet Connect', partial(self.settings_dialog, window))
         icon = read_QIcon_from_bytes(self.read_file('nwc.png'))
         ma.setIcon(icon)

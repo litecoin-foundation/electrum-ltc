@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (QLabel, QVBoxLayout, QGridLayout, QHBoxLayout,
                              QWidget, QToolTip, QPushButton, QApplication, QSlider)
 
 from electrum.i18n import _
+from electrum.gui import LIGHTNING_UI_ENABLED
 from electrum.logging import Logger
 from electrum.bitcoin import DummyAddress
 from electrum.plugin import run_hook
@@ -73,8 +74,8 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
         msg = (_("Recipient of the funds.")
                + "\n\n"
                + _("This field can contain:") + "\n"
-               + _("- a Bitcoin address or BIP21 URI") + "\n"
-               + _("- a Lightning invoice") + "\n"
+               + _("- a Litecoin address or BIP21 URI") + "\n"
+               + ((_("- a Lightning invoice") + "\n") if LIGHTNING_UI_ENABLED else "")
                + _("- a label from your list of contacts") + "\n"
                + _("- an openalias") + "\n"
                + _("- an arbitrary on-chain script, e.g.:") + " script(OP_RETURN deadbeef)" + "\n"
@@ -315,7 +316,7 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
                 outputs=outputs,
                 base_tx=base_tx,
                 is_sweep=is_sweep,
-                send_change_to_lightning=self.config.WALLET_SEND_CHANGE_TO_LIGHTNING,
+                send_change_to_lightning=LIGHTNING_UI_ENABLED and self.config.WALLET_SEND_CHANGE_TO_LIGHTNING,
                 merge_duplicate_outputs=self.config.WALLET_MERGE_DUPLICATE_OUTPUTS,
             )
         output_values = [x.value for x in outputs]
@@ -478,7 +479,8 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
         self.invoice_error.setText(_('Expired') if pi.has_expired() else '')
 
     def _is_pi_usable(self, pi: 'PaymentIdentifier') -> bool:
-        return pi.is_valid() and not pi.is_error() and (self.wallet.has_lightning() or pi.is_onchain())
+        return (pi.is_valid() and not pi.is_error()
+                and (pi.is_onchain() or (LIGHTNING_UI_ENABLED and self.wallet.has_lightning())))
 
     def _handle_payment_identifier(self):
         self.update_fields()
@@ -505,6 +507,10 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
             self.do_clear()
             return
         if pi.type == PaymentIdentifierType.LNURLW:
+            if not LIGHTNING_UI_ENABLED:
+                self.show_error(_('Lightning is disabled'))
+                self.do_clear()
+                return
             assert pi.state == PaymentIdentifierState.LNURLW_FINALIZE, \
                 f"Detected LNURLW but not ready to finalize? {pi=}"
             self.do_clear()
@@ -532,8 +538,10 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
             self.show_error('error getting invoice' + self.payto_e.payment_identifier.error)
             return
 
-        if not self.wallet.has_lightning() and not invoice.can_be_paid_onchain():
+        if (invoice.is_lightning() and not invoice.can_be_paid_onchain()
+                and (not LIGHTNING_UI_ENABLED or not self.wallet.has_lightning())):
             self.show_error(_('Lightning is disabled'))
+            return
         if self.wallet.get_invoice_status(invoice) == PR_PAID:
             # fixme: this is only for lightning
             self.show_error(_('Invoice already paid'))
@@ -611,8 +619,12 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
             else:
                 self.show_error(_('No amount'))
                 return
-        if invoice.is_lightning():
+        if invoice.is_lightning() and LIGHTNING_UI_ENABLED:
             self.pay_lightning_invoice(invoice)
+        elif invoice.is_lightning() and invoice.can_be_paid_onchain():
+            self.pay_onchain_dialog(invoice.get_outputs(), invoice=invoice)
+        elif invoice.is_lightning():
+            self.show_error(_('Lightning is disabled'))
         else:
             self.pay_onchain_dialog(invoice.outputs, invoice=invoice)
 
@@ -876,7 +888,7 @@ class SendTab(QWidget, MessageBoxMixin, Logger):
         self.amount_e.setAmount(total if outputs else None)
 
     def request_lnurl_withdraw_dialog(self, lnurl_data: LNURL3Data):
-        if not self.wallet.has_lightning():
+        if not LIGHTNING_UI_ENABLED or not self.wallet.has_lightning():
             self.show_error(
                 _("Cannot request lightning withdrawal, wallet has no lightning channels.")
             )

@@ -198,16 +198,18 @@ Pane {
                 }
 
                 Heading {
+                    visible: Daemon.currentWallet.isLightning
                     Layout.columnSpan: 2
                     text: qsTr('Lightning')
                 }
 
                 Label {
+                    visible: Daemon.currentWallet.isLightning
                     text: (Config.useGossip ? qsTr('Gossip') : qsTr('Trampoline')) + ':'
                     color: Material.accentColor
                 }
                 ColumnLayout {
-                    visible: Config.useGossip
+                    visible: Daemon.currentWallet.isLightning && Config.useGossip
                     Label {
                         text: qsTr('%1 peers').arg(Network.gossipInfo.peers)
                     }
@@ -220,7 +222,7 @@ Pane {
                 }
                 Label {
                     text: qsTr('enabled');
-                    visible: !Config.useGossip
+                    visible: Daemon.currentWallet.isLightning && !Config.useGossip
                 }
 
                 Label {

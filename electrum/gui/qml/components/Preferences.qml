@@ -356,17 +356,20 @@ Pane {
                     }
 
                     PrefsHeading {
+                        visible: Daemon.currentWallet.isLightning
                         Layout.columnSpan: 2
                         text: qsTr('Lightning')
                     }
 
                     Label {
+                        visible: Daemon.currentWallet.isLightning
                         Layout.fillWidth: true
                         text: Config.shortDescFor('LIGHTNING_PAYMENT_FEE_MAX_MILLIONTHS')
                         wrapMode: Text.Wrap
                     }
 
                     Label {
+                        visible: Daemon.currentWallet.isLightning
                         Layout.fillWidth: true
                         text: qsTr('<b>%1%</b> of payment').arg(maxfeeslider._fees[maxfeeslider.value]/10000)
                         textFormat: Text.RichText
@@ -374,6 +377,7 @@ Pane {
                     }
 
                     Slider {
+                        visible: Daemon.currentWallet.isLightning
                         id: maxfeeslider
                         Layout.columnSpan: 2
                         Layout.fillWidth: true
@@ -398,6 +402,7 @@ Pane {
                     }
 
                     RowLayout {
+                        visible: Daemon.currentWallet.isLightning
                         Layout.columnSpan: 2
                         Layout.fillWidth: true
                         spacing: 0
@@ -433,6 +438,7 @@ Pane {
                     }
 
                     RowLayout {
+                        visible: Daemon.currentWallet.isLightning
                         Layout.columnSpan: 2
                         Layout.fillWidth: true
                         spacing: 0

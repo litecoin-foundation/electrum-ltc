@@ -165,6 +165,7 @@ Item {
             }
         }
         MenuItem {
+            visible: Daemon.currentWallet.isLightning
             icon.color: action.enabled ? 'transparent' : Material.iconDisabledColor
             icon.source: '../../icons/lightning.png'
             action: Action {
@@ -476,7 +477,7 @@ Item {
         }
         function onBalanceChanged() {
             // ln low reserve warning
-            if (Daemon.currentWallet.isLowReserve) {
+            if (Daemon.currentWallet.isLightning && Daemon.currentWallet.isLowReserve) {
                 var message = [
                     qsTr('You do not have enough on-chain funds to protect your Lightning channels.'),
                     qsTr('You should have at least %1 on-chain in order to be able to sweep channel outputs.').arg(Config.formatSats(Config.lnUtxoReserve) + ' ' + Config.baseUnit)

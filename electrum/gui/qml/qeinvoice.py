@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject, pyqtEnum, QTimer, QVariant
 
 from electrum.i18n import _
+from electrum.gui import LIGHTNING_UI_ENABLED
 from electrum.logging import get_logger
 from electrum.invoices import (
     Invoice, PR_UNPAID, PR_EXPIRED, PR_UNKNOWN, PR_PAID, PR_INFLIGHT, PR_FAILED, PR_ROUTING, PR_UNCONFIRMED,
@@ -338,6 +339,10 @@ class QEInvoice(QObject, QtEventListener):
         self.canPay = False
         self.canSave = False
 
+        if self.invoiceType == QEInvoice.Type.LightningInvoice and not LIGHTNING_UI_ENABLED:
+            self.set_userinfo(_('Lightning is disabled'), QEInvoice.UserinfoStatus.Error)
+            return
+
         amount = self.amountOverride if not self.amountOverride.isEmpty else self.amount
 
         # Invalid and LNURLPayRequest have no _effectiveInvoice, so payability cannot be determined.
@@ -397,6 +402,8 @@ class QEInvoice(QObject, QtEventListener):
 
     @pyqtSlot()
     def payLightningInvoice(self):
+        if not LIGHTNING_UI_ENABLED:
+            raise Exception('Lightning is disabled')
         if not self.canPay:
             raise Exception('can not pay invoice, canPay is false')
 
@@ -548,6 +555,13 @@ class QEInvoiceParser(QEInvoice):
             return
 
         self._pi = pi
+        if not LIGHTNING_UI_ENABLED and self._pi.type in [
+            PaymentIdentifierType.BOLT11,
+            PaymentIdentifierType.LNADDR,
+            PaymentIdentifierType.LNURLP,
+        ]:
+            self.validationError.emit('no_lightning', _('Lightning is disabled'))
+            return
         if not self._pi.is_valid() or self._pi.type not in [
             PaymentIdentifierType.SPK, PaymentIdentifierType.BIP21,
             PaymentIdentifierType.BOLT11,
@@ -596,7 +610,8 @@ class QEInvoiceParser(QEInvoice):
                 self.setValidLightningInvoice(lninvoice)
                 self.validationSuccess.emit()
             elif self._pi.type == PaymentIdentifierType.BIP21:
-                if self._wallet.wallet.has_lightning() and self._wallet.wallet.lnworker.channels and self._pi.bolt11:
+                if (LIGHTNING_UI_ENABLED and self._wallet.wallet.has_lightning()
+                        and self._wallet.wallet.lnworker.channels and self._pi.bolt11):
                     lninvoice = self._pi.bolt11
                     self.setValidLightningInvoice(lninvoice)
                     self.validationSuccess.emit()

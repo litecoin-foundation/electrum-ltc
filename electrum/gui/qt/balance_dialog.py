@@ -30,6 +30,7 @@ from PyQt6.QtCore import QRect, Qt
 from PyQt6.QtGui import QPen, QPainter, QPixmap
 
 from electrum.i18n import _
+from electrum.gui import LIGHTNING_UI_ENABLED
 from electrum.gui.messages import MSG_LN_UTXO_RESERVE
 
 from .util import Buttons, CloseButton, WindowModalDialog, ColorScheme, font_height, AmountLabel, icon_path
@@ -177,8 +178,8 @@ class BalanceDialog(WindowModalDialog):
         unconfirmed = p_bal.unconfirmed
         unmatured = p_bal.unmatured
         frozen = p_bal.frozen
-        lightning = p_bal.lightning
-        f_lightning = p_bal.lightning_frozen
+        lightning = p_bal.lightning if LIGHTNING_UI_ENABLED else 0
+        f_lightning = p_bal.lightning_frozen if LIGHTNING_UI_ENABLED else 0
 
         frozen_str =  self.config.format_amount_and_units(frozen)
         confirmed_str =  self.config.format_amount_and_units(confirmed)
@@ -207,7 +208,7 @@ class BalanceDialog(WindowModalDialog):
         )
 
         vbox = QVBoxLayout()
-        if self.wallet.is_low_reserve():
+        if LIGHTNING_UI_ENABLED and self.wallet.is_low_reserve():
             reserve_str = self.config.format_amount_and_units(self.config.LN_UTXO_RESERVE)
             hbox = QHBoxLayout()
             msg = _('Warning') + ': ' + MSG_LN_UTXO_RESERVE.format(reserve_str)
@@ -263,7 +264,7 @@ class BalanceDialog(WindowModalDialog):
         vbox.addLayout(grid)
         vbox.addStretch(1)
         buttons = [CloseButton(self)]
-        if self.window.wallet.has_lightning():
+        if LIGHTNING_UI_ENABLED and self.window.wallet.has_lightning():
             swap_button = QPushButton(_('Swap'))
             swap_button.clicked.connect(lambda: self.window.run_swap_dialog())
             buttons.insert(0, swap_button)

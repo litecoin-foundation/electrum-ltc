@@ -36,7 +36,7 @@ from electrum import util
 from electrum.util import base_units_list, event_listener
 
 from electrum.gui.common_qt.util import QtEventListener
-from electrum.gui import messages
+from electrum.gui import LIGHTNING_UI_ENABLED, messages
 
 from .util import ColorScheme, HelpLabel, Buttons, CloseButton
 
@@ -377,9 +377,10 @@ class SettingsDialog(QDialog, QtEventListener):
             (gui_widgets, _('Appearance')),
             (units_widgets, _('Units')),
             (fiat_widgets, _('Fiat')),
-            (lightning_widgets, _('Lightning')),
             (misc_widgets, _('Misc')),
         ]
+        if LIGHTNING_UI_ENABLED:
+            tabs_info.insert(-1, (lightning_widgets, _('Lightning')))
         for widgets, name in tabs_info:
             tab = QWidget()
             tab_vbox = QVBoxLayout(tab)

@@ -48,7 +48,7 @@ from PyQt6.QtWidgets import (QMessageBox, QTabWidget, QMenuBar, QFileDialog, QCh
 import electrum_ecc as ecc
 
 import electrum
-from electrum.gui import messages
+from electrum.gui import LIGHTNING_UI_ENABLED, messages
 from electrum import (keystore, constants, util, bitcoin, commands,
                       lnutil)
 from electrum.bitcoin import COIN, is_address, DummyAddress
@@ -179,7 +179,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         assert wallet, "no wallet"
         self.wallet = wallet
         self._protected_requires_password = self.wallet.has_keystore_encryption
-        if wallet.has_lightning() and not self.config.cv.GUI_QT_SHOW_TAB_CHANNELS.is_set():
+        if LIGHTNING_UI_ENABLED and wallet.has_lightning() and not self.config.cv.GUI_QT_SHOW_TAB_CHANNELS.is_set():
             self.config.GUI_QT_SHOW_TAB_CHANNELS = True  # override default, but still allow disabling tab manually
 
         Exception_Hook.maybe_setup(config=self.config, wallet=self.wallet)
@@ -231,7 +231,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
                 tabs.addTab(tab, icon, description.replace("&", ""))
 
         add_optional_tab(tabs, self.addresses_tab, read_QIcon("tab_addresses.png"), _("&Addresses"))
-        add_optional_tab(tabs, self.channels_tab, read_QIcon("lightning.png"), _("Channels"))
+        if LIGHTNING_UI_ENABLED:
+            add_optional_tab(tabs, self.channels_tab, read_QIcon("lightning.png"), _("Channels"))
         add_optional_tab(tabs, self.utxo_tab, read_QIcon("tab_coins.png"), _("Co&ins"))
         add_optional_tab(tabs, self.contacts_tab, read_QIcon("tab_contacts.png"), _("Con&tacts"))
         add_optional_tab(tabs, self.console_tab, read_QIcon("tab_console.png"), _("Con&sole"))
@@ -811,7 +812,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         self.view_menu = menubar.addMenu(_("&View"))
         add_toggle_action(self.addresses_tab)
         add_toggle_action(self.utxo_tab)
-        add_toggle_action(self.channels_tab)
+        if LIGHTNING_UI_ENABLED:
+            add_toggle_action(self.channels_tab)
         add_toggle_action(self.contacts_tab)
         add_toggle_action(self.console_tab)
         add_toggle_action(self.notes_tab)
@@ -1069,18 +1071,23 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
             else:
                 network_text = _("Connected")
                 p_bal = self.wallet.get_balances_for_piechart()
-                self.balance_label.update_list(
-                    [
-                        (_('Frozen'), COLOR_FROZEN, p_bal.frozen),
-                        (_('Unmatured'), COLOR_UNMATURED, p_bal.unmatured),
-                        (_('Unconfirmed'), COLOR_UNCONFIRMED, p_bal.unconfirmed),
-                        (_('On-chain'), COLOR_CONFIRMED, p_bal.confirmed),
+                balance_items = [
+                    (_('Frozen'), COLOR_FROZEN, p_bal.frozen),
+                    (_('Unmatured'), COLOR_UNMATURED, p_bal.unmatured),
+                    (_('Unconfirmed'), COLOR_UNCONFIRMED, p_bal.unconfirmed),
+                    (_('On-chain'), COLOR_CONFIRMED, p_bal.confirmed),
+                ]
+                if LIGHTNING_UI_ENABLED:
+                    balance_items.extend([
                         (_('Lightning'), COLOR_LIGHTNING, p_bal.lightning),
                         (_('Lightning frozen'), COLOR_FROZEN_LIGHTNING, p_bal.lightning_frozen),
-                    ],
-                    warning = self.wallet.is_low_reserve(),
+                    ])
+                self.balance_label.update_list(
+                    balance_items,
+                    warning=LIGHTNING_UI_ENABLED and self.wallet.is_low_reserve(),
                 )
-                balance = p_bal.total()
+                balance = (p_bal.total() if LIGHTNING_UI_ENABLED else
+                           p_bal.confirmed + p_bal.unconfirmed + p_bal.unmatured + p_bal.frozen)
                 balance_text =  _("Balance") + ": %s "%(self.format_amount_and_units(balance))
                 # append fiat balance and price
                 if self.fx.is_enabled():
@@ -1262,6 +1269,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         channels: Optional[Sequence['Channel']] = None,
         get_coins: Optional[Callable[..., Sequence[PartialTxInput]]] = None,
     ) -> bool:
+        if not LIGHTNING_UI_ENABLED:
+            return False
         if not self.network:
             self.show_error(_("You are offline."))
             return False
@@ -1637,7 +1646,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         self.send_tab.payto_contacts(labels)
 
     def set_contact(self, label, address):
-        if not (is_address(address) or is_valid_email(address)):  # email = lightning address
+        if not (is_address(address) or (LIGHTNING_UI_ENABLED and is_valid_email(address))):
             self.show_error(_('Invalid Address'))
             self.contact_list.update()  # Displays original unchanged value
             return False
@@ -1896,7 +1905,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         self.coincontrol_sb.setVisible(True)
 
     def update_lightning_icon(self):
-        if not self.wallet.has_lightning():
+        if not LIGHTNING_UI_ENABLED or not self.wallet.has_lightning():
             self.lightning_button.setVisible(False)
             return
         if self.network is None or self.network.channel_db is None:
@@ -1982,6 +1991,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
             tab.searchable_list.filter(t)
 
     def new_channel_dialog(self, *, amount_sat=None, min_amount_sat=None):
+        if not LIGHTNING_UI_ENABLED:
+            return
         from electrum.lnutil import MIN_FUNDING_SAT
         from .new_channel_dialog import NewChannelDialog
         assert self.wallet.can_have_lightning()
@@ -2011,7 +2022,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
         line2 = QLineEdit()
         line2.setFixedWidth(32 * char_width_in_lineedit())
         address_label = QLabel(_("Address"))
-        address_label.setToolTip(_("Bitcoin- or Lightning address"))
+        address_label.setToolTip(_("Litecoin address"))
         grid.addWidget(address_label, 1, 0)
         grid.addWidget(line1, 1, 1)
         grid.addWidget(QLabel(_("Name")), 2, 0)
@@ -2022,6 +2033,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
             self.set_contact(line2.text(), line1.text())
 
     def init_lightning_dialog(self, close_dialog: Optional[QDialog] = None) -> bool:
+        if not LIGHTNING_UI_ENABLED:
+            return False
         assert not self.wallet.has_lightning()
         if self.wallet.can_have_deterministic_lightning():
             msg = _(
@@ -2312,6 +2325,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
             return
 
     def import_channel_backup(self, encrypted: str):
+        if not LIGHTNING_UI_ENABLED:
+            return
         if not self.question('Import channel backup?'):
             return
         if not self.wallet.lnworker:
@@ -2337,7 +2352,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger, QtEventListener):
             if data.lower().startswith(BITCOIN_BIP21_URI_SCHEME + ':'):
                 self.handle_payment_identifier(data)
                 return
-            if data.lower().startswith('channel_backup:'):
+            if LIGHTNING_UI_ENABLED and data.lower().startswith('channel_backup:'):
                 self.import_channel_backup(data)
                 return
             # else if the user scanned an offline signed tx

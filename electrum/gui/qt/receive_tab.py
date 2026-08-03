@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (QLabel, QVBoxLayout, QGridLayout, QTextEdit,
                              QHBoxLayout, QPushButton, QWidget, QSizePolicy, QFrame)
 
 from electrum.i18n import _
+from electrum.gui import LIGHTNING_UI_ENABLED
 from electrum.util import InvoiceError, ChoiceItem
 from electrum.invoices import pr_expiration_values
 from electrum.logging import Logger
@@ -70,14 +71,14 @@ class ReceiveTab(QWidget, MessageBoxMixin, Logger):
 
         self.clear_invoice_button = QPushButton(_('Clear'))
         self.clear_invoice_button.clicked.connect(self.do_clear)
-        text = _('Onchain') if self.wallet.has_lightning() else _('Request')
+        text = _('Onchain') if LIGHTNING_UI_ENABLED and self.wallet.has_lightning() else _('Request')
         self.create_onchain_invoice_button = QPushButton(text)
         self.create_onchain_invoice_button.setIcon(read_QIcon("bitcoin.png"))
         self.create_onchain_invoice_button.clicked.connect(lambda: self.create_invoice(False))
         self.create_lightning_invoice_button = QPushButton(_('Lightning'))
         self.create_lightning_invoice_button.setIcon(read_QIcon("lightning.png"))
         self.create_lightning_invoice_button.clicked.connect(lambda: self.create_invoice(True))
-        self.create_lightning_invoice_button.setVisible(self.wallet.has_lightning())
+        self.create_lightning_invoice_button.setVisible(LIGHTNING_UI_ENABLED and self.wallet.has_lightning())
 
         self.receive_buttons = buttons = QHBoxLayout()
         buttons.addWidget(self.clear_invoice_button)
@@ -253,11 +254,11 @@ class ReceiveTab(QWidget, MessageBoxMixin, Logger):
         can_zeroconf = help_texts.can_zeroconf() if not self.confirmed_zeroconf_for_this_request else False
         self.receive_rebalance_button.suggestion = help_texts.ln_rebalance_suggestion
         self.receive_swap_button.suggestion = help_texts.ln_swap_suggestion
-        self.receive_rebalance_button.setVisible(can_rebalance)
-        self.receive_swap_button.setVisible(can_swap)
+        self.receive_rebalance_button.setVisible(LIGHTNING_UI_ENABLED and can_rebalance)
+        self.receive_swap_button.setVisible(LIGHTNING_UI_ENABLED and can_swap)
         self.receive_rebalance_button.setEnabled(can_rebalance and self.window.num_tasks() == 0)
         self.receive_swap_button.setEnabled(can_swap and self.window.num_tasks() == 0)
-        self.receive_zeroconf_button.setVisible(can_zeroconf)
+        self.receive_zeroconf_button.setVisible(LIGHTNING_UI_ENABLED and can_zeroconf)
         self.receive_zeroconf_button.setEnabled(can_zeroconf)
         text, data, help_text, title = self.get_tab_data()
         if self.confirmed_zeroconf_for_this_request and help_texts.can_zeroconf():

@@ -31,6 +31,7 @@ from PyQt6.QtWidgets import QMenu, QAbstractItemView
 from PyQt6.QtCore import Qt, QItemSelectionModel, QModelIndex
 
 from electrum.i18n import _
+from electrum.gui import LIGHTNING_UI_ENABLED
 from electrum.util import format_time
 from electrum.plugin import run_hook
 
@@ -203,7 +204,7 @@ class RequestList(MyTreeView):
             copy_menu.addAction(_("Address"), lambda: self.main_window.do_copy(req.get_address(), title='Bitcoin Address'))
         if URI := self.wallet.get_request_URI(req):
             copy_menu.addAction(_("Bitcoin URI"), lambda: self.main_window.do_copy(URI, title='Bitcoin URI'))
-        if req.is_lightning():
+        if LIGHTNING_UI_ENABLED and req.is_lightning():
             copy_menu.addAction(_("Lightning Request"), lambda: self.main_window.do_copy(self.wallet.get_bolt11_invoice(req), title='Lightning Request'))
         #if 'view_url' in req:
         #    menu.addAction(_("View in web browser"), lambda: webopen(req['view_url']))

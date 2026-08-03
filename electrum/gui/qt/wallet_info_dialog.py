@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout, QPushButton, QWidget, QTabWidget)
 
 from electrum.plugin import run_hook
+from electrum.gui import LIGHTNING_UI_ENABLED
 from electrum.i18n import _
 from electrum.wallet import Multisig_Wallet
 from electrum.wizard import WizardViewState
@@ -71,42 +72,42 @@ class WalletInfoDialog(WindowModalDialog):
             ks_type = str(keystore_types[0]) if keystore_types else _('No keystore')
             grid.addWidget(WWLabel(ks_type), cur_row, 1)
             cur_row += 1
-        # lightning
-        grid.addWidget(WWLabel(_('Lightning') + ':'), cur_row, 0)
-        from .util import IconLabel
-        if wallet.has_lightning():
-            if wallet.lnworker.has_deterministic_node_id():
-                grid.addWidget(WWLabel(_('Enabled')), cur_row, 1)
-            else:
-                label = IconLabel(text='Enabled, non-recoverable channels')
-                label.setIcon(read_QIcon('cloud_no'))
-                grid.addWidget(label, cur_row, 1)
-                if wallet.get_seed_type() == 'segwit':
-                    msg = _("Your channels cannot be recovered from seed, because they were created with an old version of Electrum. "
-                            "This means that you must save a backup of your wallet every time you create a new channel.\n\n"
-                            "If you want this wallet to have recoverable channels, you must close your existing channels and restore this wallet from seed")
+        if LIGHTNING_UI_ENABLED:
+            grid.addWidget(WWLabel(_('Lightning') + ':'), cur_row, 0)
+            from .util import IconLabel
+            if wallet.has_lightning():
+                if wallet.lnworker.has_deterministic_node_id():
+                    grid.addWidget(WWLabel(_('Enabled')), cur_row, 1)
                 else:
-                    msg = _("Your channels cannot be recovered from seed. "
-                            "This means that you must save a backup of your wallet every time you create a new channel.\n\n"
-                            "If you want to have recoverable channels, you must create a new wallet with an Electrum seed")
-                grid.addWidget(HelpButton(msg), cur_row, 3)
-            cur_row += 1
-            grid.addWidget(WWLabel(_('Lightning Node ID:')), cur_row, 0)
-            cur_row += 1
-            nodeid_text = wallet.lnworker.node_keypair.pubkey.hex()
-            nodeid_e = ShowQRLineEdit(nodeid_text, config, title=_("Node ID"))
-            grid.addWidget(nodeid_e, cur_row, 0, 1, 4)
-            cur_row += 1
-        else:
-            if wallet.can_have_lightning():
-                grid.addWidget(WWLabel('Not enabled'), cur_row, 1)
-                button = QPushButton(_("Enable"))
-                button.pressed.connect(lambda: window.init_lightning_dialog(self))
-                grid.addWidget(button, cur_row, 3)
+                    label = IconLabel(text='Enabled, non-recoverable channels')
+                    label.setIcon(read_QIcon('cloud_no'))
+                    grid.addWidget(label, cur_row, 1)
+                    if wallet.get_seed_type() == 'segwit':
+                        msg = _("Your channels cannot be recovered from seed, because they were created with an old version of Electrum. "
+                                "This means that you must save a backup of your wallet every time you create a new channel.\n\n"
+                                "If you want this wallet to have recoverable channels, you must close your existing channels and restore this wallet from seed")
+                    else:
+                        msg = _("Your channels cannot be recovered from seed. "
+                                "This means that you must save a backup of your wallet every time you create a new channel.\n\n"
+                                "If you want to have recoverable channels, you must create a new wallet with an Electrum seed")
+                    grid.addWidget(HelpButton(msg), cur_row, 3)
+                cur_row += 1
+                grid.addWidget(WWLabel(_('Lightning Node ID:')), cur_row, 0)
+                cur_row += 1
+                nodeid_text = wallet.lnworker.node_keypair.pubkey.hex()
+                nodeid_e = ShowQRLineEdit(nodeid_text, config, title=_("Node ID"))
+                grid.addWidget(nodeid_e, cur_row, 0, 1, 4)
+                cur_row += 1
             else:
-                grid.addWidget(WWLabel(_("Not available for this wallet.")), cur_row, 1)
-                grid.addWidget(HelpButton(_("Lightning is currently restricted to HD wallets with p2wpkh addresses.")), cur_row, 2)
-            cur_row += 1
+                if wallet.can_have_lightning():
+                    grid.addWidget(WWLabel('Not enabled'), cur_row, 1)
+                    button = QPushButton(_("Enable"))
+                    button.pressed.connect(lambda: window.init_lightning_dialog(self))
+                    grid.addWidget(button, cur_row, 3)
+                else:
+                    grid.addWidget(WWLabel(_("Not available for this wallet.")), cur_row, 1)
+                    grid.addWidget(HelpButton(_("Lightning is currently restricted to HD wallets with p2wpkh addresses.")), cur_row, 2)
+                cur_row += 1
         vbox.addLayout(grid)
 
         labels_clayout = None

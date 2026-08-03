@@ -73,7 +73,7 @@ from electrum.util import (UserCancelled, profiler, send_exception_to_crash_repo
                            standardize_path, UserFacingException)
 from electrum.wallet import Wallet, Abstract_Wallet
 from electrum.wallet_db import WalletRequiresSplit, WalletRequiresUpgrade, WalletUnfinished
-from electrum.gui import BaseElectrumGui
+from electrum.gui import BaseElectrumGui, LIGHTNING_UI_ENABLED
 from electrum.simple_config import SimpleConfig
 from electrum.wizard import WizardViewState
 from electrum.keystore import load_keystore
@@ -260,7 +260,7 @@ class ElectrumGui(BaseElectrumGui, Logger):
         m.addAction(_("Plugins"), self.show_plugins_dialog)
         if network:
             m.addAction(_("Network"), self.show_network_dialog)
-        if network and network.lngossip:
+        if LIGHTNING_UI_ENABLED and network and network.lngossip:
             m.addAction(_("Lightning Network"), self.show_lightning_dialog)
         for window in self.windows:
             name = window.wallet.basename()
