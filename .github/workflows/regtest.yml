@@ -24,6 +24,8 @@ jobs:
       PIP_BREAK_SYSTEM_PACKAGES: "1"
       # ElectrumX exits with an error without this:
       ALLOW_ROOT: "1"
+      LITECOIND_VERSION: "0.21.5.6"
+      LITECOIND_SHA256: "3c0a217651a431ef446641669a0b74ce7dbcd9b9ed1a118fc830b8f6779ee83f"
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
@@ -35,43 +37,37 @@ jobs:
           python-version: "3.10"
           cache: 'pip'
           cache-dependency-path: contrib/requirements/requirements.txt
-      - name: Determine latest bitcoind version
-        id: bitcoind-version
-        run: |
-          BITCOIND_VERSION=$(curl https://bitcoincore.org/en/download/ | grep -E -i --only-matching 'Latest version: [0-9\.]+' | grep -E --only-matching '[0-9\.]+')
-          if [ -z "$BITCOIND_VERSION" ]; then
-            echo "Failed to detect bitcoind version from bitcoincore.org" >&2
-            exit 1
-          fi
-          echo "Detected bitcoind version: $BITCOIND_VERSION"
-          echo "version=$BITCOIND_VERSION" >> "$GITHUB_OUTPUT"
-      - name: Cache bitcoind binary
+      - name: Cache Litecoin Core binary
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
         with:
-          path: /tmp/bitcoind
-          key: bitcoind-ubuntu-24.04-${{ steps.bitcoind-version.outputs.version }}
+          path: /tmp/litecoind
+          key: litecoind-ubuntu-24.04-${{ env.LITECOIND_VERSION }}
       - name: Install OS deps
         run: |
           sudo apt-get update
           sudo apt-get -y install curl jq bc automake libtool
       - name: Install Electrum and ElectrumX
-        # installs e-x 2.0.0 tag
+        # Keep the Litecoin-compatible ElectrumX revision; 2.0 expects Bitcoin-only mempool RPC fields.
         # uses --ignore-installed to ignore installed system installed attrs
         run: |
           python3 -m pip install --user --upgrade pip
           python3 -m pip install --user .[tests] --ignore-installed
-          python3 -m pip install --user "e-x[leveldb] @ git+https://github.com/spesmilo/electrumx.git@280cb339aa158e099eb936033eecd15719770651"
-      - name: Fetch bitcoind binary
-        env:
-          BITCOIND_VERSION: ${{ steps.bitcoind-version.outputs.version }}
+          python3 -m pip install --user git+https://github.com/spesmilo/electrumx.git@0b260d4345242cc41e316e97d7de10ae472fd172
+      - name: Fetch Litecoin Core binary
         run: |
-          mkdir -p /tmp/bitcoind
-          BITCOIND_FILENAME=bitcoin-$BITCOIND_VERSION-x86_64-linux-gnu.tar.gz
-          BITCOIND_PATH=/tmp/bitcoind/$BITCOIND_FILENAME
-          BITCOIND_URL=https://bitcoincore.org/bin/bitcoin-core-$BITCOIND_VERSION/$BITCOIND_FILENAME
-          cd /tmp/bitcoind
-          tar -xaf $BITCOIND_PATH || (rm -f /tmp/bitcoind/* && curl --output $BITCOIND_PATH $BITCOIND_URL && tar -xaf $BITCOIND_PATH)
-          sudo cp -a bitcoin-$BITCOIND_VERSION/* /usr/
+          mkdir -p /tmp/litecoind
+          LITECOIND_FILENAME=litecoin-$LITECOIND_VERSION-x86_64-linux-gnu.tar.gz
+          LITECOIND_PATH=/tmp/litecoind/$LITECOIND_FILENAME
+          LITECOIND_URL=https://download.litecoin.org/litecoin-$LITECOIND_VERSION/linux/$LITECOIND_FILENAME
+          cd /tmp/litecoind
+          if [[ ! -f "$LITECOIND_PATH" ]]; then
+            curl --fail --location --output "$LITECOIND_PATH" "$LITECOIND_URL"
+          fi
+          echo "$LITECOIND_SHA256  $LITECOIND_FILENAME" | sha256sum --check --status
+          tar -xaf "$LITECOIND_PATH"
+          sudo cp -a litecoin-$LITECOIND_VERSION/* /usr/
+          litecoind --version
+          litecoin-cli --version
       - name: Cache libsecp256k1 build
         id: cache-libsecp
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
@@ -84,8 +80,20 @@ jobs:
           ./contrib/make_libsecp256k1.sh
           mkdir -p contrib/_saved_secp256k1_build
           cp electrum/libsecp256k1.so.* contrib/_saved_secp256k1_build/
-      - name: Start bitcoind (regtest)
-        run: nohup tests/regtest/run_bitcoind.sh > /tmp/bitcoind.log 2>&1 &
+      - name: Start Litecoin Core (regtest)
+        run: nohup tests/regtest/run_bitcoind.sh > /tmp/litecoind.log 2>&1 &
+      - name: Wait for Litecoin Core setup
+        run: |
+          for _ in {1..60}; do
+            height=$(litecoin-cli -regtest -rpcuser=doggman -rpcpassword=donkey -rpcport=19554 getblockcount 2>/dev/null || true)
+            if [[ "$height" =~ ^[0-9]+$ ]] && (( height >= 441 )); then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Litecoin Core did not finish regtest setup" >&2
+          tail -200 /tmp/litecoind.log || true
+          exit 1
       - name: Start electrumx
         run: nohup tests/regtest/run_electrumx.sh > /tmp/electrumx.log 2>&1 &
       - name: Run regtest tests
@@ -107,7 +115,7 @@ jobs:
       - name: Dump service logs (on failure)
         if: failure()
         run: |
-          echo "--- bitcoind log ---"
-          tail -200 /tmp/bitcoind.log || true
+          echo "--- litecoind log ---"
+          tail -200 /tmp/litecoind.log || true
           echo "--- electrumx log ---"
           tail -200 /tmp/electrumx.log || true

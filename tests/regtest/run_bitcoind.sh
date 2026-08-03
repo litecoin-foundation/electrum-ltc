@@ -19,8 +19,12 @@ rpcport=19554
 EOF
 rm -rf ~/.litecoin/regtest
 litecoind -regtest &
-sleep 6
-litecoin-cli createwallet test_wallet
-addr=$(litecoin-cli getnewaddress)
-litecoin-cli generatetoaddress 150 $addr
+litecoin_cli=(litecoin-cli -regtest -rpcuser=doggman -rpcpassword=donkey -rpcport=19554)
+"${litecoin_cli[@]}" -rpcwait createwallet test_wallet
+addr=$("${litecoin_cli[@]}" -rpcwallet=test_wallet getnewaddress)
+# Initialize MWEB with a peg-in at activation (Litecoin Core issue #807).
+"${litecoin_cli[@]}" generatetoaddress 431 "$addr"
+mweb_addr=$("${litecoin_cli[@]}" getnewaddress mweb mweb)
+"${litecoin_cli[@]}" sendtoaddress "$mweb_addr" 1
+"${litecoin_cli[@]}" generatetoaddress 10 "$addr"
 tail -f ~/.litecoin/regtest/debug.log
