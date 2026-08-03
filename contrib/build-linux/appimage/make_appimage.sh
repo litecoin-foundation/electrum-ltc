@@ -154,7 +154,6 @@ info "installing electrum and its dependencies."
 
 "$python" -m pip install --no-build-isolation --no-dependencies --no-warn-script-location \
     --cache-dir "$PIP_CACHE_DIR" "$PROJECT_ROOT"
-mv "$APPDIR/usr/bin/electrum" "$APPDIR/usr/bin/electrum-ltc"
 
 # was only needed during build time, not runtime
 "$python" -m pip uninstall -y Cython

@@ -71,7 +71,7 @@ setup(
     # package_data kwarg lists what gets put in site-packages when pip installing the tar.gz.
     # By specifying include_package_data=True, MANIFEST.in becomes responsible for both.
     include_package_data=True,
-    scripts=['electrum/electrum'],
+    scripts=['electrum/electrum-ltc'],
     data_files=data_files,
     description="Lightweight Litecoin Wallet",
     author="Litecoin Foundation",

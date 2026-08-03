@@ -1,10 +1,10 @@
-# Electrum - Lightweight Litecoin client
+# Electrum-LTC - Lightweight Litecoin client
 
 ```
 Licence: MIT Licence
-Author: Thomas Voegtlin
+Author: Litecoin Foundation
 Language: Python (>= 3.10)
-Homepage: https://electrum.org/
+Homepage: https://electrum-ltc.org/
 ```
 
 [![Build Status](https://github.com/litecoin-foundation/electrum-ltc/actions/workflows/builds.yml/badge.svg?branch=master)](https://github.com/litecoin-foundation/electrum-ltc/actions/workflows/builds.yml)
@@ -14,16 +14,24 @@ Homepage: https://electrum.org/
 
 ## Getting started
 
-_(If you've come here looking to simply run Electrum,
-[you may download it here](https://electrum.org/#download).)_
+_(If you've come here looking to simply run Electrum-LTC,
+[you may download it here](https://electrum-ltc.org/#download).)_
 
-Electrum itself is pure Python, and so are most of the required dependencies,
+Electrum-LTC itself is pure Python, and so are most of the required dependencies,
 but not everything. The following sections describe how to run from source, but here
 is a TL;DR:
 
+First, install `uv` if you have not already:
+```
+$ curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+Restart your shell if the `uv` command is not immediately available.
+
 ```
 $ sudo apt-get install libsecp256k1-dev
-$ ELECTRUM_ECC_DONT_COMPILE=1 python3 -m pip install --user ".[gui,crypto]"
+$ uv venv
+$ ELECTRUM_ECC_DONT_COMPILE=1 uv pip install ".[gui,crypto]"
+$ uv run ./run_electrum
 ```
 
 ### Not pure-python dependencies
@@ -32,7 +40,7 @@ $ ELECTRUM_ECC_DONT_COMPILE=1 python3 -m pip install --user ".[gui,crypto]"
 
 If you want to use the Qt interface, install the Qt dependencies:
 ```
-$ sudo apt-get install python3-pyqt6
+$ uv pip install PyQt6
 ```
 
 #### QR code scanning
@@ -48,7 +56,7 @@ For elliptic curve operations,
 [libsecp256k1](https://github.com/bitcoin-core/secp256k1)
 is a required dependency.
 
-If you "pip install" Electrum, by default libsecp will get compiled locally,
+If you "pip install" Electrum-LTC, by default libsecp will get compiled locally,
 as part of the `electrum-ecc` dependency. This can be opted-out of,
 by setting the `ELECTRUM_ECC_DONT_COMPILE=1` environment variable.
 For the compilation to work, besides a C compiler, you need at least:
@@ -66,7 +74,7 @@ Due to the need for fast symmetric ciphers,
 [cryptography](https://github.com/pyca/cryptography) is required.
 Install from your package manager (or from pip):
 ```
-$ sudo apt-get install python3-cryptography
+$ uv pip install cryptography
 ```
 
 For fast blockchain verification,
@@ -74,7 +82,7 @@ For fast blockchain verification,
 Install from your package manager (or from pip):
 
 ```
-$ sudo apt-get install python3-scrypt
+$ uv pip install scrypt
 ```
 
 #### hardware-wallet support
@@ -86,23 +94,23 @@ If you would like hardware wallet support,
 ### Running from tar.gz
 
 If you downloaded the official package (tar.gz), you can run
-Electrum from its root directory without installing it on your
+Electrum-LTC from its root directory without installing it on your
 system; all the pure python dependencies are included in the 'packages'
-directory. To run Electrum from its root directory, just do:
+directory. To run Electrum-LTC from its root directory, just do:
 ```
 $ ./run_electrum
 ```
 
-You can also install Electrum on your system, by running this command:
+You can also install Electrum-LTC into a virtual environment:
 ```
-$ sudo apt-get install python3-setuptools python3-pip
-$ python3 -m pip install --user .
+$ uv venv
+$ uv pip install .
+$ uv run electrum-ltc
 ```
 
 This will download and install the Python dependencies used by
-Electrum instead of using the 'packages' directory.
-It will also place an executable named `electrum` in `~/.local/bin`,
-so make sure that is on your `PATH` variable.
+Electrum-LTC instead of using the 'packages' directory.
+It will also place an executable named `electrum-ltc` in `.venv/bin`.
 
 
 ### Development version (git clone)
@@ -119,7 +127,8 @@ $ git submodule update --init
 
 Run install (this should install dependencies):
 ```
-$ python3 -m pip install --user -e .
+$ uv venv
+$ uv pip install -e ".[gui,crypto]"
 ```
 
 Create translations (optional):
@@ -130,20 +139,22 @@ $ ./contrib/locale/build_locale.sh electrum/locale/locale electrum/locale/locale
 
 Finally, to start Electrum:
 ```
-$ ./run_electrum
+$ uv run ./run_electrum
 ```
 
 ### Run tests
 
 Run unit tests with `pytest`:
 ```
-$ pytest tests -v
+$ uv pip install -r contrib/requirements/requirements-ci.txt
+$ uv pip install -e ".[tests,qml_gui]"
+$ uv run python -m pytest tests -v
 ```
 (can be parallelized with `-n auto` option, using [`pytest-xdist`](https://github.com/pytest-dev/pytest-xdist) plugin)
 
 To run a single file, specify it directly like this:
 ```
-$ pytest tests/test_bitcoin.py -v
+$ uv run python -m pytest tests/test_bitcoin.py -v
 ```
 
 ## Creating Binaries
@@ -161,11 +172,10 @@ Any help testing the software, reporting or fixing bugs, reviewing pull requests
 and recent changes, writing tests, or helping with outstanding issues is very welcome.
 Implementing new features, or improving/refactoring the codebase, is of course
 also welcome, but to avoid wasted effort, especially for larger changes,
-we encourage discussing these on the issue tracker or IRC first.
-
-Besides [GitHub](https://github.com/litecoin-foundation/electrum-ltc),
-most communication about Electrum development happens on IRC, in the
-`#electrum` channel on Libera Chat. The easiest way to participate on IRC is
-with the web client, [web.libera.chat](https://web.libera.chat/#electrum).
+we encourage discussing these on the issue tracker first.
 
 Please improve translations on [Crowdin](https://crowdin.com/project/electrum).
+
+
+Electrum-LTC is based on Electrum, created by Thomas Voegtlin.
+Available under the MIT License.
