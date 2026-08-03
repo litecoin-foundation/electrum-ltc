@@ -2281,9 +2281,9 @@ class Commands(Logger):
         to_ccy = to_ccy.upper()
         # Default currencies
         if from_ccy == '':
-            from_ccy = "BTC" if to_ccy != "BTC" else self.daemon.fx.ccy
+            from_ccy = "LTC" if to_ccy != "LTC" else self.daemon.fx.ccy
         if to_ccy == '':
-            to_ccy = "BTC" if from_ccy != "BTC" else self.daemon.fx.ccy
+            to_ccy = "LTC" if from_ccy != "LTC" else self.daemon.fx.ccy
         # Get current rates
         rate_from = self.daemon.fx.exchange.get_cached_spot_quote(from_ccy)
         rate_to = self.daemon.fx.exchange.get_cached_spot_quote(to_ccy)

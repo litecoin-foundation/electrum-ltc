@@ -98,6 +98,35 @@ class TestCommands(ElectrumTestCase):
         with self.assertRaises(ValueError):
             eval_bool("Falsee")
 
+    async def test_convert_currency_defaults_to_ltc(self):
+        class DummyExchange:
+            def name(self):
+                return 'CoinGecko'
+
+            def get_cached_spot_quote(self, ccy):
+                return {'LTC': Decimal(1), 'EUR': Decimal('84.25')}[ccy]
+
+        class DummyFx:
+            ccy = 'EUR'
+            exchange = DummyExchange()
+
+            def is_enabled(self):
+                return True
+
+            def ccy_amount_str(self, amount, **_kwargs):
+                return str(amount)
+
+        cmds = Commands(config=self.config, daemon=type('Daemon', (), {'fx': DummyFx()})())
+        result = await cmds.convert_currency(to_ccy='EUR')
+
+        self.assertEqual({
+            'from_amount': '1',
+            'to_amount': '84.25',
+            'from_ccy': 'LTC',
+            'to_ccy': 'EUR',
+            'source': 'CoinGecko',
+        }, result)
+
     async def test_convert_xkey(self):
         cmds = Commands(config=self.config)
         xpubs = {

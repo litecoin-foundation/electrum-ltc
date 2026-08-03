@@ -10,9 +10,6 @@
         "USD",
         "UST"
     ],
-    "BitFlyer": [
-        "JPY"
-    ],
     "BitPay": [
         "AED",
         "AFN",
@@ -191,36 +188,6 @@
     ],
     "Bitso": [
         "MXN"
-    ],
-    "BlockchainInfo": [
-        "ARS",
-        "AUD",
-        "BRL",
-        "CAD",
-        "CHF",
-        "CLP",
-        "CNY",
-        "CZK",
-        "DKK",
-        "EUR",
-        "GBP",
-        "HKD",
-        "HRK",
-        "HUF",
-        "INR",
-        "ISK",
-        "JPY",
-        "KRW",
-        "NZD",
-        "PLN",
-        "RON",
-        "RUB",
-        "SEK",
-        "SGD",
-        "THB",
-        "TRY",
-        "TWD",
-        "USD"
     ],
     "Bylls": [
         "CAD"
@@ -607,20 +574,8 @@
         "ZRX",
         "ZWD"
     ],
-    "CointraderMonitor": [
-        "BRL"
-    ],
     "Kraken": [
         "CAD",
-        "EUR",
-        "GBP",
-        "JPY",
-        "USD"
-    ],
-    "MempoolSpace": [
-        "AUD",
-        "CAD",
-        "CHF",
         "EUR",
         "GBP",
         "JPY",

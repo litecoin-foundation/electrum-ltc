@@ -43,6 +43,7 @@ CCY_PRECISIONS = {'BHD': 3, 'BIF': 0, 'BYR': 0, 'CLF': 4, 'CLP': 0,
 
 SPOT_RATE_REFRESH_TARGET = 150      # approx. every 2.5 minutes, try to refresh spot price
 SPOT_RATE_CLOSE_TO_STALE = 450      # try harder to fetch an update if price is getting old
+HISTORY_CACHE_ASSET = 'LTC'
 SPOT_RATE_EXPIRY = 600              # spot price becomes stale after 10 minutes -> we no longer show/use it
 
 # Limit max BTC price and precision, to limit disk/mem usage.
@@ -111,7 +112,7 @@ class ExchangeBase(Logger):
 
     def get_cached_spot_quote(self, ccy: str) -> Decimal:
         """Returns the cached exchange rate as a Decimal"""
-        if ccy == 'BTC':
+        if ccy == 'LTC':
             return Decimal(1)
         rate = self._quotes.get(ccy)
         if rate is None or rate.is_nan():
@@ -127,7 +128,7 @@ class ExchangeBase(Logger):
     def _read_historical_rates_from_file(
         *, exchange_name: str, ccy: str, cache_dir: str,
     ) -> Tuple[Optional[Dict[str, str]], Optional[float]]:
-        filename = os.path.join(cache_dir, f"{exchange_name}_{ccy}")
+        filename = os.path.join(cache_dir, f"{exchange_name}_{HISTORY_CACHE_ASSET}_{ccy}")
         if not os.path.exists(filename):
             return None, None
         timestamp = os.stat(filename).st_mtime
@@ -179,7 +180,7 @@ class ExchangeBase(Logger):
             assert isinstance(key, str), f"{exchange_name=}. {ccy=}. {key=!r}. {rate=!r}"
             assert isinstance(rate, str), f"{exchange_name=}. {ccy=}. {key=!r}. {rate=!r}"
         # write to file
-        filename = os.path.join(cache_dir, f"{exchange_name}_{ccy}")
+        filename = os.path.join(cache_dir, f"{exchange_name}_{HISTORY_CACHE_ASSET}_{ccy}")
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(json.dumps(history, sort_keys=True))
 
@@ -286,7 +287,7 @@ class Yadio(ExchangeBase):
         return list(dicts.keys())
 
     async def request_spot_rates(self, ccy):
-        json = await self.get_json('api.yadio.io', '/rate/%s/BTC' % ccy)
+        json = await self.get_json('api.yadio.io', '/rate/%s/LTC' % ccy)
         return {ccy: to_decimal(json['rate'])}
 
 
@@ -296,14 +297,14 @@ class BitcoinAverage(ExchangeBase):
 
     async def request_spot_rates(self, ccy):
         json = await self.get_json('apiv2.bitcoinaverage.com', '/indices/global/ticker/short')
-        return dict([(r.replace("BTC", ""), to_decimal(json[r]['last']))
-                     for r in json if r != 'timestamp'])
+        return dict([(r.replace("LTC", ""), to_decimal(json[r]['last']))
+                     for r in json if r.startswith('LTC')])
 
 
 class Bitbank(ExchangeBase):
 
     async def request_spot_rates(self, ccy):
-        json = await self.get_json('public.bitbank.cc', '/btc_jpy/ticker')
+        json = await self.get_json('public.bitbank.cc', '/ltc_jpy/ticker')
         return {'JPY': to_decimal(json['data']['last'])}
 
 
@@ -314,7 +315,7 @@ class BitFinex(ExchangeBase):
             'api-pub.bitfinex.com',
             f"/v2/conf/pub:list:pair:exchange")
         pairs = [pair for pair in json[0]
-                 if len(pair) == 6 and pair[:3] == "BTC"]
+                 if len(pair) == 6 and pair[:3] == "LTC"]
         return [pair[3:] for pair in pairs]
 
     def get_history_ccys(self):
@@ -324,37 +325,31 @@ class BitFinex(ExchangeBase):
         # ref https://docs.bitfinex.com/reference/rest-public-ticker
         json = await self.get_json(
             'api-pub.bitfinex.com',
-            f"/v2/ticker/tBTC{ccy}")
+            f"/v2/ticker/tLTC{ccy}")
         return {ccy: to_decimal(json[6])}
 
     async def request_history(self, ccy):
         # ref https://docs.bitfinex.com/reference/rest-public-candles
         history = await self.get_json(
             'api.bitfinex.com',
-            f"/v2/candles/trade:1D:tBTC{ccy}/hist?limit=10000")
+            f"/v2/candles/trade:1D:tLTC{ccy}/hist?limit=10000")
         return dict([(timestamp_to_datetime(h[0] // 1000, utc=True).strftime('%Y-%m-%d'), to_decimal(h[2]))
                      for h in history])
 
-
-class BitFlyer(ExchangeBase):
-
-    async def request_spot_rates(self, ccy):
-        json = await self.get_json('bitflyer.jp', '/api/echo/price')
-        return {'JPY': to_decimal(json['mid'])}
 
 
 class BitPay(ExchangeBase):
 
     async def request_spot_rates(self, ccy):
-        json = await self.get_json('bitpay.com', '/api/rates')
+        json = await self.get_json('bitpay.com', '/api/rates/LTC')
         return dict([(r['code'], to_decimal(r['rate'])) for r in json])
 
 
 class Bitso(ExchangeBase):
 
     async def request_spot_rates(self, ccy):
-        json = await self.get_json('api.bitso.com', '/v2/ticker')
-        return {'MXN': to_decimal(json['last'])}
+        json = await self.get_json('api.bitso.com', '/v3/ticker/?book=ltc_mxn')
+        return {'MXN': to_decimal(json['payload']['last'])}
 
 
 class BitStamp(ExchangeBase):
@@ -366,13 +361,13 @@ class BitStamp(ExchangeBase):
             f"/api/v2/ticker/")
         pairs = [ticker["pair"] for ticker in json]
         pairs = [pair for pair in pairs
-                 if len(pair) == 7 and pair[:4] == "BTC/"]
+                 if len(pair) == 7 and pair[:4] == "LTC/"]
         return [pair[4:] for pair in pairs]
 
     async def request_spot_rates(self, ccy):
         # ref https://www.bitstamp.net/api/#tag/Tickers/operation/GetMarketTicker
         if ccy in CURRENCIES[self.name()]:
-            json = await self.get_json('www.bitstamp.net', f'/api/v2/ticker/btc{ccy.lower()}/')
+            json = await self.get_json('www.bitstamp.net', f'/api/v2/ticker/ltc{ccy.lower()}/')
             return {ccy: to_decimal(json['last'])}
         return {}
 
@@ -382,14 +377,14 @@ class BitStamp(ExchangeBase):
     async def request_history(self, ccy):
         # ref https://www.bitstamp.net/api/#tag/Market-info/operation/GetOHLCData
         merged_history = {}
-        history_starts = 1313625600  # for BTCUSD pair (probably earliest)
+        history_starts = 1313625600  # for LTCUSD pair (probably earliest)
         items_per_request = 1000
         step = 86400
 
         async def populate_history(endtime: int):
             history = await self.get_json(
                 'www.bitstamp.net',
-                f"/api/v2/ohlc/btc{ccy.lower()}/?step={step}&limit={items_per_request}&end={endtime}")
+                f"/api/v2/ohlc/ltc{ccy.lower()}/?step={step}&limit={items_per_request}&end={endtime}")
             history = dict([
                 (timestamp_to_datetime(int(h["timestamp"]), utc=True).strftime('%Y-%m-%d'), to_decimal(h["close"]))
                 for h in history["data"]["ohlc"]])
@@ -405,17 +400,11 @@ class BitStamp(ExchangeBase):
         return merged_history
 
 
-class BlockchainInfo(ExchangeBase):
-
-    async def request_spot_rates(self, ccy):
-        json = await self.get_json('blockchain.info', '/ticker')
-        return dict([(r, to_decimal(json[r]['15m'])) for r in json])
-
 
 class Bylls(ExchangeBase):
 
     async def request_spot_rates(self, ccy):
-        json = await self.get_json('bylls.com', '/api/price?from_currency=BTC&to_currency=CAD')
+        json = await self.get_json('bylls.com', '/api/price?from_currency=LTC&to_currency=CAD')
         return {'CAD': to_decimal(json['public_price']['to_price'])}
 
 
@@ -423,16 +412,22 @@ class Coinbase(ExchangeBase):
 
     async def request_spot_rates(self, ccy):
         json = await self.get_json('api.coinbase.com',
-                             '/v2/exchange-rates?currency=BTC')
+                             '/v2/exchange-rates?currency=LTC')
         return {ccy: to_decimal(rate) for (ccy, rate) in json["data"]["rates"].items()}
 
 
 class CoinGecko(ExchangeBase):
 
     async def request_spot_rates(self, ccy):
-        json = await self.get_json('api.coingecko.com', '/api/v3/exchange_rates')
-        return dict([(ccy.upper(), to_decimal(d['value']))
-                     for ccy, d in json['rates'].items() if d.get('value') is not None])
+        path = (
+            '/api/v3/coins/litecoin?localization=false&tickers=false&'
+            'community_data=false&developer_data=false&sparkline=false'
+        )
+        json = await self.get_json(
+            'api.coingecko.com',
+            path)
+        return {ccy.upper(): to_decimal(rate)
+                for ccy, rate in json['market_data']['current_price'].items()}
 
     def get_history_ccys(self):
         # CoinGecko seems to have historical data for all ccys it supports
@@ -445,7 +440,7 @@ class CoinGecko(ExchangeBase):
         # > Your request exceeds the allowed time range. Public API users are limited to querying
         # > historical data within the past 365 days. Upgrade to a paid plan to enjoy full historical data access
         history = await self.get_json('api.coingecko.com',
-                                      f"/api/v3/coins/bitcoin/market_chart?vs_currency={ccy}&days={num_days}")
+                                      f"/api/v3/coins/litecoin/market_chart?vs_currency={ccy}&days={num_days}")
 
         return dict([(timestamp_to_datetime(h[0]/1000, utc=True).strftime('%Y-%m-%d'), to_decimal(h[1]))
                      for h in history['prices']])
@@ -454,7 +449,7 @@ class CoinGecko(ExchangeBase):
 class Bit2C(ExchangeBase):
 
     async def request_spot_rates(self, ccy):
-        json = await self.get_json('bit2c.co.il', '/Exchanges/BtcNis/Ticker.json')
+        json = await self.get_json('bit2c.co.il', '/Exchanges/LtcNis/Ticker.json')
         return {'ILS': to_decimal(json['ll'])}
 
     def get_history_ccys(self):
@@ -462,45 +457,12 @@ class Bit2C(ExchangeBase):
 
     async def request_history(self, ccy):
         history = await self.get_json('bit2c.co.il',
-                                      '/Exchanges/BtcNis/KLines?resolution=1D&from=1357034400&to=%s' % int(time.time()))
+                                      '/Exchanges/LtcNis/KLines?resolution=1D&from=1357034400&to=%s' % int(time.time()))
 
         return dict([(timestamp_to_datetime(h[0], utc=True).strftime('%Y-%m-%d'), to_decimal(h[6]))
                      for h in history])
 
 
-class CointraderMonitor(ExchangeBase):
-
-    async def request_spot_rates(self, ccy):
-        json = await self.get_json('cointradermonitor.com', '/api/pbb/v1/ticker')
-        return {'BRL': to_decimal(json['last'])}
-
-
-class MempoolSpace(ExchangeBase):
-
-    async def request_spot_rates(self, ccy):
-        # ref https://mempool.space/docs/api/rest#get-price
-        json = await self.get_json('mempool.space', '/api/v1/prices')
-        json.pop("time", None)
-        return {
-            ccy_: to_decimal(rate)
-            for ccy_, rate in json.items()
-        }
-
-    def get_history_ccys(self):
-        return CURRENCIES[self.name()]
-
-    async def request_history(self, ccy):
-        # ref https://mempool.space/docs/api/rest#get-historical-price
-        # note: as of 2026-09, data older than 2022-05 only has weekly resolution
-        ccy = ccy.upper()
-        history = await self.get_json(
-            'mempool.space',
-            f"/api/v1/historical-price?currency={ccy}")
-        return dict([
-            (timestamp_to_datetime(h["time"], utc=True).strftime('%Y-%m-%d'), to_decimal(h[ccy]))
-            for h in history["prices"]
-            if h[ccy] >= 0  # filter out rate=-1 values received for "unknown" fx rates
-        ])
 
 
 class Kraken(ExchangeBase):
@@ -508,7 +470,7 @@ class Kraken(ExchangeBase):
     async def request_spot_rates(self, ccy):
         # ref https://docs.kraken.com/api/docs/rest-api/get-ticker-information
         ccys = ['EUR', 'USD', 'CAD', 'GBP', 'JPY']
-        pairs = ['XBT%s' % c for c in ccys]
+        pairs = ['LTC%s' % c for c in ccys]
         json = await self.get_json('api.kraken.com',
                              '/0/public/Ticker?pair=%s' % ','.join(pairs))
         return dict((k[-3:], to_decimal(v['c'][0]))
@@ -521,7 +483,7 @@ class Kraken(ExchangeBase):
 
 class Zaif(ExchangeBase):
     async def request_spot_rates(self, ccy):
-        json = await self.get_json('api.zaif.jp', '/api/1/last_price/btc_jpy')
+        json = await self.get_json('api.zaif.jp', '/api/1/last_price/ltc_jpy')
         return {'JPY': to_decimal(json['last_price'])}
 
 
