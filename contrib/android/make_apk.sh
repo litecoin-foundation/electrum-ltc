@@ -36,7 +36,7 @@ info "apk building phase starts."
 # defaults:
 #
 #   export APP_PACKAGE_NAME=Electrum
-#   export APP_PACKAGE_DOMAIN=org.electrum
+#   export APP_PACKAGE_DOMAIN=com.litecoin
 #
 # FIXME: changing "APP_PACKAGE_NAME" seems to require a clean rebuild of ".buildozer/".
 #        However, even with a clean build, the build appears to break in the final stages (~4.7.0).
@@ -45,10 +45,10 @@ info "apk building phase starts."
 # So, in particular, to build testnet APKs, simply uncomment one of the following at a time (per-build):
 #
 # Testnet3
-#export APP_PACKAGE_DOMAIN=org.electrum.testnet
+#export APP_PACKAGE_DOMAIN=com.litecoin.testnet
 #
 # Testnet4
-#export APP_PACKAGE_DOMAIN=org.electrum.testnet4
+#export APP_PACKAGE_DOMAIN=com.litecoin.testnet4
 
 if [ $CI ]; then
     # override log level specified in buildozer.spec to "debug":

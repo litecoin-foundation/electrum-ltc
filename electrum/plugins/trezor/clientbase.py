@@ -62,7 +62,7 @@ class TrezorClientBase(HardwareClientBase, Logger):
 
         self.transport = transport
         self.app = AppManifest(
-            app_name="Electrum",
+            app_name="Electrum-LTC",
             credentials=(),
             button_callback=self.button_request,
             pin_callback=self.get_pin,

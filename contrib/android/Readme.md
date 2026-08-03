@@ -1,9 +1,9 @@
 # Qml GUI
 
-The Qml GUI is used with Electrum on Android devices, since Electrum 4.4.
+The Qml GUI is used with Electrum-LTC on Android devices, since Electrum-LTC 4.4.
 To generate an APK file, follow these instructions.
 
-(note: older versions of Electrum for Android used the "kivy" GUI)
+(note: older versions of Electrum-LTC for Android used the "kivy" GUI)
 
 ## Android binary with Docker
 
@@ -208,7 +208,7 @@ Open the run of interest and download the `electrum-android-*` artifact.
 The apk is built in `debug` mode, and is signed using an ephemeral RSA key.
 
 For tech demo purposes, you can directly install this apk on your phone.
-However, if you already have electrum installed on your phone, Android's TOFU signing model
+However, if you already have Electrum-LTC installed on your phone, Android's TOFU signing model
 will not let you upgrade that to the CI apk due to mismatching signing keys. As the CI key
 is ephemeral, it is not even possible to upgrade from an older CI apk to a newer CI apk.
 
@@ -216,5 +216,5 @@ However, it is possible to resign the apk manually with one's own key, using
 e.g. [`apksigner`](https://developer.android.com/studio/command-line/apksigner),
 mutating the apk in place, after which it should be possible to upgrade:
 ```
-apksigner sign --ks ~/wspace/electrum/contrib/android/android_debug.keystore Electrum-*-arm64-v8a-debug.apk
+apksigner sign --ks ~/wspace/electrum-ltc/contrib/android/android_debug.keystore Electrum-*-arm64-v8a-debug.apk
 ```
