@@ -51,6 +51,9 @@ if TYPE_CHECKING:
     from electrum.wizard import NewWalletWizard
 
 
+NEW_WALLET_UNSUPPORTED_MSG = _('Creating new two-factor wallets is not supported in Electrum-LTC.')
+
+
 def get_signing_xpub(xtype):
     if not constants.net.TESTNET:
         xpub = "xpub661MyMwAqRbcGnMkaTx2594P9EDuiEqMq25PM2aeG6UmwzaohgA6uDmNsvSUV8ubqwA3Wpste1hg69XHgjUuCD5HLcEp2QPzyV1HMrPppsL"
@@ -192,20 +195,7 @@ class TrustedCoinCosignerClient(Logger):
         return self.send_request('get', 'tos', payload)
 
     def create(self, xpubkey1, xpubkey2, email, billing_plan='electrum-per-tx-otp'):
-        """
-        Creates a new cosigner resource.
-        :param xpubkey1: a bip32 extended public key (customarily the hot key)
-        :param xpubkey2: a bip32 extended public key (customarily the cold key)
-        :param email: a contact email
-        :param billing_plan: the billing plan for the cosigner
-        """
-        payload = {
-            'email': email,
-            'xpubkey1': xpubkey1,
-            'xpubkey2': xpubkey2,
-            'billing_plan': billing_plan,
-        }
-        return self.send_request('post', 'cosigner', payload)
+        raise UserFacingException(NEW_WALLET_UNSUPPORTED_MSG)
 
     def auth(self, id, otp):
         """
@@ -531,9 +521,10 @@ class TrustedCoinPlugin(BasePlugin):
             return t
 
     def make_seed(self, seed_type):
-        if not is_any_2fa_seed_type(seed_type):
-            raise Exception(f'unexpected seed type: {seed_type!r}')
-        return Mnemonic('english').make_seed(seed_type=seed_type)
+        raise UserFacingException(NEW_WALLET_UNSUPPORTED_MSG)
+
+    def reject_new_wallet(self, wizard_data):
+        raise UserFacingException(NEW_WALLET_UNSUPPORTED_MSG)
 
     @hook
     def do_clear(self, window):
@@ -591,6 +582,7 @@ class TrustedCoinPlugin(BasePlugin):
     def extend_wizard(self, wizard: 'NewWalletWizard'):
         views = {
             'trustedcoin_start': {
+                'accept': self.reject_new_wallet,
                 'next': 'trustedcoin_choose_seed',
             },
             'trustedcoin_choose_seed': {
@@ -598,15 +590,19 @@ class TrustedCoinPlugin(BasePlugin):
                         else 'trustedcoin_have_seed'
             },
             'trustedcoin_create_seed': {
+                'accept': self.reject_new_wallet,
                 'next': lambda d: 'trustedcoin_create_ext' if wizard.wants_ext(d) else 'trustedcoin_confirm_seed',
             },
             'trustedcoin_create_ext': {
+                'accept': self.reject_new_wallet,
                 'next': 'trustedcoin_confirm_seed',
             },
             'trustedcoin_confirm_seed': {
+                'accept': self.reject_new_wallet,
                 'next': lambda d: 'trustedcoin_confirm_ext' if wizard.wants_ext(d) else 'trustedcoin_tos',
             },
             'trustedcoin_confirm_ext': {
+                'accept': self.reject_new_wallet,
                 'next': 'trustedcoin_tos',
             },
             'trustedcoin_have_seed': {
@@ -616,12 +612,12 @@ class TrustedCoinPlugin(BasePlugin):
                 'next': 'trustedcoin_keep_disable',
             },
             'trustedcoin_keep_disable': {
-                'next': lambda d: 'trustedcoin_tos' if d['trustedcoin_keepordisable'] != 'disable'
-                        else 'wallet_password',
+                'next': 'wallet_password',
                 'accept': self.recovery_disable,
-                'last': lambda d: wizard.is_single_password() and d['trustedcoin_keepordisable'] == 'disable'
+                'last': lambda d: wizard.is_single_password()
             },
             'trustedcoin_tos': {
+                'accept': self.reject_new_wallet,
                 'next': lambda d: 'trustedcoin_show_confirm_otp' if 'xprv1' not in d or is_xprv(d['xprv1'])
                         else 'trustedcoin_keystore_unlock'
             },
@@ -655,19 +651,17 @@ class TrustedCoinPlugin(BasePlugin):
         return xprv1, xpub1, xprv2, xpub2, xpub3, short_id
 
     def on_accept_otp_secret(self, wizard_data):
-        self.logger.debug('OTP secret accepted, creating keystores')
-        xprv1, xpub1, xprv2, xpub2, xpub3, short_id = self.create_keys(wizard_data)
-        k1 = keystore.from_xprv(xprv1)
-        k2 = keystore.from_xpub(xpub2)
-        k3 = keystore.from_xpub(xpub3)
-
-        wizard_data['x1'] = k1.dump()
-        wizard_data['x2'] = k2.dump()
-        wizard_data['x3'] = k3.dump()
+        raise UserFacingException(NEW_WALLET_UNSUPPORTED_MSG)
 
     def recovery_disable(self, wizard_data):
-        if wizard_data['trustedcoin_keepordisable'] != 'disable':
-            return
+        seed = wizard_data.get('seed')
+        if (wizard_data.get('keystore_type') != 'haveseed'
+                or not isinstance(seed, str)
+                or not is_any_2fa_seed_type(calc_seed_type(seed))):
+            raise UserFacingException(NEW_WALLET_UNSUPPORTED_MSG)
+        wizard_data['seed_type'] = calc_seed_type(seed)
+        wizard_data['trustedcoin_keepordisable'] = 'disable'
+        wizard_data['trustedcoin_go_online'] = False
 
         self.logger.debug('2fa disabled, creating keystores')
         xprv1, xpub1, xprv2, xpub2, xpub3, short_id = self.create_keys(wizard_data)

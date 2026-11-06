@@ -5,31 +5,21 @@ import QtQuick.Controls 2.1
 import "../../../gui/qml/components/wizard"
 
 WizardComponent {
-    valid: keepordisablegroup.checkedButton
+    valid: true
 
     function apply() {
-        wizard_data['trustedcoin_keepordisable'] = keepordisablegroup.checkedButton.keepordisable
-    }
-
-    ButtonGroup {
-        id: keepordisablegroup
-        onCheckedButtonChanged: checkIsLast()
+        wizard_data['trustedcoin_keepordisable'] = 'disable'
     }
 
     ColumnLayout {
+        width: parent.width
         Label {
             text: qsTr('Restore 2FA wallet')
         }
-        RadioButton {
-            ButtonGroup.group: keepordisablegroup
-            property string keepordisable: 'keep'
-            checked: true
-            text: qsTr('Keep')
-        }
-        RadioButton {
-            ButtonGroup.group: keepordisablegroup
-            property string keepordisable: 'disable'
-            text: qsTr('Disable')
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            text: qsTr('TrustedCoin two-factor authentication is unavailable for Litecoin. Your wallet will be restored with both of your private keys so you can spend without the service.')
         }
     }
 }

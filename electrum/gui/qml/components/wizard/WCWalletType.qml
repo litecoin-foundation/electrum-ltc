@@ -14,8 +14,6 @@ WizardComponent {
         delete wizard_data['seed_type']
         if (wizard_data['wallet_type'] == 'standard')
             wizard_data['seed_type'] = 'segwit'
-        else if (wizard_data['wallet_type'] == '2fa')
-            wizard_data['seed_type'] = '2fa_segwit'
         else if (wizard_data['wallet_type'] == 'multisig')
             wizard_data['seed_type'] = 'segwit'
     }
@@ -38,12 +36,6 @@ WizardComponent {
             property string wallettype: 'standard'
             checked: true
             text: qsTr('Standard Wallet')
-        }
-        ElRadioButton {
-            Layout.fillWidth: true
-            ButtonGroup.group: wallettypegroup
-            property string wallettype: '2fa'
-            text: qsTr('Wallet with two-factor authentication')
         }
         ElRadioButton {
             Layout.fillWidth: true

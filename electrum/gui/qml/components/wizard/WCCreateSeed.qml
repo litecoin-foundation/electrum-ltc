@@ -78,6 +78,10 @@ WizardComponent {
     }
 
     Component.onCompleted: {
+        if (wizard_data['wallet_type'] == '2fa') {
+            warningtext.text = qsTr('Creating new two-factor wallets is not supported in Electrum-LTC.')
+            return
+        }
         bitcoin.generateSeed(wizard_data['seed_type'])
     }
 

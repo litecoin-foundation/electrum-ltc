@@ -9,7 +9,8 @@ from electrum.i18n import _
 from electrum.bip32 import BIP32Node
 from electrum import bitcoin
 
-from .trustedcoin import (server, ErrorConnectingServer, MOBILE_DISCLAIMER, TrustedCoinException)
+from .trustedcoin import (server, ErrorConnectingServer, MOBILE_DISCLAIMER, TrustedCoinException,
+                         NEW_WALLET_UNSUPPORTED_MSG)
 from electrum.gui.common_qt.plugins import PluginQObject
 
 if TYPE_CHECKING:
@@ -118,66 +119,8 @@ class TrustedcoinPluginQObject(PluginQObject):
 
     @pyqtSlot()
     def createKeystore(self):
-        email = 'dummy@electrum-ltc.org'
-
-        self.remoteKeyState = ''
-        self._otpSecret = ''
-        self.otpSecretChanged.emit()
-
-        wizard_data = self.wizard.get_wizard_data()
-
-        xprv1, xpub1, xprv2, xpub2, xpub3, short_id = self.plugin.create_keys(wizard_data)
-
-        def create_remote_key_task():
-            try:
-                self.plugin.logger.debug('create remote key')
-                r = server.create(xpub1, xpub2, email)
-
-                otp_secret = r['otp_secret']
-                _xpub3 = r['xpubkey_cosigner']
-                _id = r['id']
-            except (socket.error, ErrorConnectingServer) as e:
-                self.remoteKeyState = 'error'
-                self.remoteKeyError.emit(f'Network error: {str(e)}')
-            except TrustedCoinException as e:
-                if e.status_code == 409:
-                    self.remoteKeyState = 'wallet_known'
-                    self._shortId = short_id
-                    self.shortIdChanged.emit()
-                else:
-                    self.remoteKeyState = 'error'
-                    self.logger.warning(str(e))
-                    self.remoteKeyError.emit(f'Service error: {str(e)}')
-            except (KeyError, TypeError) as e:  # catch any assumptions
-                self.remoteKeyState = 'error'
-                self.remoteKeyError.emit(f'Error: {str(e)}')
-                self.logger.error(str(e))
-            else:
-                if short_id != _id:
-                    self.remoteKeyState = 'error'
-                    self.logger.error("unexpected trustedcoin short_id: expected {}, received {}".format(short_id, _id))
-                    self.remoteKeyError.emit('Unexpected short_id')
-                    return
-                if xpub3 != _xpub3:
-                    self.remoteKeyState = 'error'
-                    self.logger.error("unexpected trustedcoin xpub3: expected {}, received {}".format(xpub3, _xpub3))
-                    self.remoteKeyError.emit('Unexpected trustedcoin xpub3')
-                    return
-                self.remoteKeyState = 'new'
-                self._otpSecret = otp_secret
-                self.otpSecretChanged.emit()
-                self._shortId = short_id
-                self.shortIdChanged.emit()
-            finally:
-                self._busy = False
-                self.busyChanged.emit()
-
-        self._busy = True
-        self.busyChanged.emit()
-
-        t = threading.Thread(target=create_remote_key_task)
-        t.daemon = True
-        t.start()
+        self.remoteKeyState = 'error'
+        self.remoteKeyError.emit(NEW_WALLET_UNSUPPORTED_MSG)
 
     @pyqtSlot()
     def resetOtpSecret(self):

@@ -392,7 +392,6 @@ class WCWalletType(WalletWizardComponent):
         message = _('What kind of wallet do you want to create?')
         wallet_kinds = [
             ChoiceItem(key='standard', label=_('Standard wallet')),
-            ChoiceItem(key='2fa', label=_('Wallet with two-factor authentication')),
             ChoiceItem(key='multisig', label=_('Multi-signature wallet')),
             ChoiceItem(key='imported', label=_('Import Bitcoin addresses or private keys')),
         ]
@@ -454,7 +453,10 @@ class WCCreateSeed(WalletWizardComponent):
 
     def on_ready(self):
         if self.wizard_data['wallet_type'] == '2fa':
-            self.seed_type = '2fa_segwit'
+            self.error = _('Creating new two-factor wallets is not supported in Electrum-LTC.')
+            self.busy = False
+            self.valid = False
+            return
         QTimer.singleShot(1, self.create_seed)
 
     def apply(self):

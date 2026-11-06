@@ -520,9 +520,10 @@ class NewWalletWizard(KeystoreWizard):
 
     def on_wallet_type(self, wizard_data: dict) -> str:
         t = wizard_data['wallet_type']
+        if t == '2fa':
+            raise UserFacingException(_('Creating new two-factor wallets is not supported in Electrum-LTC.'))
         return {
             'standard': 'keystore_type',
-            '2fa': 'trustedcoin_start',
             'multisig': 'multisig',
             'imported': 'imported'
         }.get(t)
@@ -556,6 +557,7 @@ class NewWalletWizard(KeystoreWizard):
     def on_accept_have_seed(self, wizard_data: dict) -> None:
         if self.wants_2fa(wizard_data):
             wizard_data['wallet_type'] = '2fa'
+            wizard_data['trustedcoin_keepordisable'] = 'disable'
             return
         if not self.wants_ext(wizard_data):
             self.maybe_master_pubkey(wizard_data)
@@ -714,6 +716,24 @@ class NewWalletWizard(KeystoreWizard):
     def create_storage(self, path: str, data: dict):
         assert data['wallet_type'] in ['standard', '2fa', 'imported', 'multisig']
 
+        if data['wallet_type'] == '2fa':
+            # The plugin stays available for historical wallets. New files must
+            # recover both user keys from a seed, without enrolling with the service.
+            seed = data.get('seed')
+            if (data.get('keystore_type') != 'haveseed'
+                    or data.get('trustedcoin_keepordisable') != 'disable'
+                    or not isinstance(seed, str)
+                    or not is_any_2fa_seed_type(mnemonic.calc_seed_type(seed))):
+                raise UserFacingException(_('Creating new two-factor wallets is not supported in Electrum-LTC.'))
+            recovered_data = copy.deepcopy(data)
+            self.plugins.get('trustedcoin').recovery_disable(recovered_data)
+            for key in ('x1', 'x2'):
+                supplied_key = data.get(key)
+                if (not isinstance(supplied_key, dict)
+                        or supplied_key.get('xprv') != recovered_data[key]['xprv']):
+                    raise UserFacingException(_('Creating new two-factor wallets is not supported in Electrum-LTC.'))
+            data = recovered_data
+
         if os.path.exists(path):
             raise UserFacingException(_('File already exists at path: {}').format(path))
         try:
@@ -821,14 +841,14 @@ class NewWalletWizard(KeystoreWizard):
             db.put('x1', k.dump())
             if 'trustedcoin_keepordisable' in data and data['trustedcoin_keepordisable'] == 'disable':
                 k2 = keystore.from_xprv(data['x2']['xprv'])
-                if data['encrypt'] and k2.may_have_password():
+                if data['password'] and k2.may_have_password():
                     k2.update_password(None, data['password'])
                 db.put('x2', k2.dump())
             else:
                 db.put('x2', data['x2'])
             if 'x3' in data:
                 db.put('x3', data['x3'])
-            db.put('use_trustedcoin', True)
+            db.put('use_trustedcoin', False)
         elif data['wallet_type'] == 'multisig':
             if not isinstance(k, keystore.Xpub):
                 raise TypeError(f'unexpected keystore(main) type={type(k)} in multisig. not bip32.')

@@ -34,9 +34,8 @@ from PyQt6.QtWidgets import (QTextEdit, QVBoxLayout, QLabel, QGridLayout, QHBoxL
 
 from electrum.i18n import _
 from electrum.plugin import hook
-from electrum.util import InvalidPassword, ChoiceItem
+from electrum.util import InvalidPassword, ChoiceItem, UserFacingException
 from electrum.logging import Logger, get_logger
-from electrum import keystore
 
 from electrum.gui.qt.util import (WindowModalDialog, WaitingDialog, OkButton, CancelButton, Buttons, icon_path,
                                   internal_plugin_icon_path, WWLabel, CloseButton, ColorScheme,
@@ -49,7 +48,7 @@ from electrum.gui.qt.wizard.wallet import (WCCreateSeed, WCConfirmSeed, WCHaveSe
 from electrum.gui.qt.util import read_QIcon_from_bytes
 
 from .common_qt import TrustedcoinPluginQObject
-from .trustedcoin import TrustedCoinPlugin, DISCLAIMER
+from .trustedcoin import TrustedCoinPlugin, DISCLAIMER, NEW_WALLET_UNSUPPORTED_MSG
 
 if TYPE_CHECKING:
     from electrum.gui.qt.main_window import ElectrumWindow
@@ -307,22 +306,11 @@ class Plugin(TrustedCoinPlugin):
             'trustedcoin_confirm_ext': {
                 'next': 'trustedcoin_continue_online',
             },
-            'trustedcoin_keep_disable': {
-                'next': lambda d: 'trustedcoin_continue_online' if d['trustedcoin_keepordisable'] != 'disable'
-                else 'wallet_password',
-            }
         }
         wizard.navmap_merge(ext_online)
 
     def on_continue_online(self, wizard_data):
-        if not wizard_data['trustedcoin_go_online']:
-            self.logger.debug('Staying offline, create keystores here')
-            xprv1, xpub1, xprv2, xpub2, xpub3, short_id = self.create_keys(wizard_data)
-            k1 = keystore.from_xprv(xprv1)
-            k2 = keystore.from_xpub(xpub2)
-
-            wizard_data['x1'] = k1.dump()
-            wizard_data['x2'] = k2.dump()
+        raise UserFacingException(NEW_WALLET_UNSUPPORTED_MSG)
 
 
 class WCDisclaimer(WalletWizardComponent):
@@ -555,23 +543,16 @@ class WCShowConfirmOTP(WalletWizardComponent):
 class WCKeepDisable(WalletWizardComponent):
     def __init__(self, parent, wizard):
         WalletWizardComponent.__init__(self, parent, wizard, title=_('Restore 2FA wallet'))
-        message = ' '.join([
-            'You are going to restore a wallet protected with two-factor authentication.',
-            'Do you want to keep using two-factor authentication with this wallet,',
-            'or do you want to disable it, and have two master private keys in your wallet?'
-        ])
-        choices = [
-            ChoiceItem(key='keep', label=_('Keep')),
-            ChoiceItem(key='disable', label=_('Disable')),
-        ]
-        self.choice_w = ChoiceWidget(message=message, choices=choices)
-        self.layout().addWidget(self.choice_w)
+        message = _(
+            'TrustedCoin two-factor authentication is unavailable for Litecoin. '
+            'Your wallet will be restored with both of your private keys so you can spend without the service.')
+        self.layout().addWidget(WWLabel(message))
         self.layout().addStretch(1)
 
         self._valid = True
 
     def apply(self):
-        self.wizard_data['trustedcoin_keepordisable'] = self.choice_w.selected_key
+        self.wizard_data['trustedcoin_keepordisable'] = 'disable'
 
 
 class WCContinueOnline(WalletWizardComponent):
