@@ -1,3 +1,19 @@
+# Electrum-LTC 4.8.3 (release preparation)
+ * Based on upstream Electrum 4.8.3, including its security fixes.
+ * New TrustedCoin two-factor wallets are disabled. Existing wallets and
+   historical two-factor seeds remain recoverable offline using both user keys.
+ * Update checks use the established Litecoin release key and accept historical
+   four-part Litecoin version numbers.
+ * Online crash submission is disabled; reports remain available locally and
+   issues can be opened manually on the Electrum-LTC GitHub repository.
+ * Windows installs register only the Litecoin URI scheme and preserve other
+   applications' protocol handlers on uninstall.
+ * The application version is 4.8.3. Either a plain version tag or an ltc-prefixed
+   tag can label the final release commit; the existing upstream tag is unchanged.
+ * Lightning UI remains disabled, including unsupported anchor channels.
+
+# Upstream Electrum history (not an Electrum-LTC feature/support list)
+
 # Release 4.8.3 (October 23, 2026) (security update)
  * Security fixes for reports received from:
    - dannydeezy

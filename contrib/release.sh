@@ -87,8 +87,10 @@ fi
 VERSION=$("$CONTRIB"/print_electrum_version.py)
 info "VERSION: $VERSION"
 REV=$(git describe --tags)
+REV=${REV#ltc-}
 info "REV: $REV"
 COMMIT=$(git rev-parse HEAD)
+[ "$REV" = "$VERSION" ] || fail "Tag the release commit with $VERSION or ltc-$VERSION before running release.sh."
 
 export ELECBUILD_COMMIT="${COMMIT}^{commit}"
 

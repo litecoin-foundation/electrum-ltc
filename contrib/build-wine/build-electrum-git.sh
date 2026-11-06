@@ -14,6 +14,7 @@ set -e
 pushd "$PROJECT_ROOT"
 
 VERSION=$(git describe --tags --dirty --always)
+VERSION=${VERSION#ltc-}
 info "Last commit: $VERSION"
 
 info "preparing electrum-locale."
@@ -71,7 +72,9 @@ popd
 
 info "building NSIS installer"
 # $VERSION could be passed to the electrum.nsi script, but this would require some rewriting in the script itself.
-makensis -DPRODUCT_VERSION=$VERSION electrum.nsi
+PACKAGE_VERSION=$(python3 "$CONTRIB/print_electrum_version.py")
+WINDOWS_VERSION=$(python3 -c 'import sys; v = sys.argv[1].split("."); print(".".join(v + ["0"] * (4 - len(v))))' "$PACKAGE_VERSION")
+makensis -DPRODUCT_VERSION="$VERSION" -DPRODUCT_VERSION_NUMERIC="$WINDOWS_VERSION" electrum.nsi
 
 cd dist
 mv electrum-setup.exe $NAME_ROOT-$VERSION-setup.exe

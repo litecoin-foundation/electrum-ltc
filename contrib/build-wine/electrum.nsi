@@ -52,7 +52,10 @@
   Caption "${PRODUCT_NAME}"
 
   ;Adds the Product Version on top of the Version Tab in the Properties of the file.
-  VIProductVersion 1.0.0.0
+  !ifndef PRODUCT_VERSION_NUMERIC
+    !error "PRODUCT_VERSION_NUMERIC must be supplied as four numeric version components"
+  !endif
+  VIProductVersion ${PRODUCT_VERSION_NUMERIC}
 
   ;VIAddVersionKey - Adds a field in the Version Tab of the File Properties. This can either be a field provided by the system or a user defined field.
   VIAddVersionKey ProductName "${PRODUCT_NAME} Installer"
@@ -189,23 +192,11 @@ Section
   CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME} Testnet.lnk" "$INSTDIR\electrum-${PRODUCT_VERSION}.exe" "--testnet" "$INSTDIR\electrum-${PRODUCT_VERSION}.exe" 0
 
 
-  ;Links litecoin:, lightningltc: and lnurl LUD-17 URIs to Electrum
+  ;Lightning is disabled in Electrum-LTC. Register only Litecoin URIs.
   WriteRegStr HKCU "Software\Classes\litecoin" "" "URL:litecoin Protocol"
   WriteRegStr HKCU "Software\Classes\litecoin" "URL Protocol" ""
-  WriteRegStr HKCU "Software\Classes\litecoin" "DefaultIcon" "$\"$INSTDIR\electrum.ico, 0$\""
+  WriteRegStr HKCU "Software\Classes\litecoin\DefaultIcon" "" "$\"$INSTDIR\electrum.ico$\",0"
   WriteRegStr HKCU "Software\Classes\litecoin\shell\open\command" "" "$\"$INSTDIR\electrum-${PRODUCT_VERSION}.exe$\" $\"%1$\""
-  WriteRegStr HKCU "Software\Classes\lightningltc" "" "URL:lightning Protocol"
-  WriteRegStr HKCU "Software\Classes\lightningltc" "URL Protocol" ""
-  WriteRegStr HKCU "Software\Classes\lightning" "DefaultIcon" "$\"$INSTDIR\electrum.ico, 0$\""
-  WriteRegStr HKCU "Software\Classes\lightning\shell\open\command" "" "$\"$INSTDIR\electrum-${PRODUCT_VERSION}.exe$\" $\"%1$\""
-  WriteRegStr HKCU "Software\Classes\lnurlp" "" "URL:lnurlp Protocol"
-  WriteRegStr HKCU "Software\Classes\lnurlp" "URL Protocol" ""
-  WriteRegStr HKCU "Software\Classes\lnurlp" "DefaultIcon" "$\"$INSTDIR\electrum.ico, 0$\""
-  WriteRegStr HKCU "Software\Classes\lnurlp\shell\open\command" "" "$\"$INSTDIR\electrum-${PRODUCT_VERSION}.exe$\" $\"%1$\""
-  WriteRegStr HKCU "Software\Classes\lnurlw" "" "URL:lnurlw Protocol"
-  WriteRegStr HKCU "Software\Classes\lnurlw" "URL Protocol" ""
-  WriteRegStr HKCU "Software\Classes\lnurlw" "DefaultIcon" "$\"$INSTDIR\electrum.ico, 0$\""
-  WriteRegStr HKCU "Software\Classes\lnurlw\shell\open\command" "" "$\"$INSTDIR\electrum-${PRODUCT_VERSION}.exe$\" $\"%1$\""
 
   ;Adds an uninstaller possibility to Windows Uninstall or change a program section
   WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
@@ -236,10 +227,13 @@ Section "Uninstall"
   Delete "$SMPROGRAMS\${PRODUCT_NAME}\*.*"
   RMDir  "$SMPROGRAMS\${PRODUCT_NAME}"
 
-  DeleteRegKey HKCU "Software\Classes\litecoin"
-  DeleteRegKey HKCU "Software\Classes\lightningltc"
-  DeleteRegKey HKCU "Software\Classes\lnurlp"
-  DeleteRegKey HKCU "Software\Classes\lnurlw"
+  ;Another wallet may have become the Litecoin handler after installation.
+  ;Remove the handler only if its command still points to this installation.
+  StrCpy $R0 ""
+  ReadRegStr $R0 HKCU "Software\Classes\litecoin\shell\open\command" ""
+  StrCmp $R0 "$\"$INSTDIR\electrum-${PRODUCT_VERSION}.exe$\" $\"%1$\"" 0 keep_litecoin_handler
+    DeleteRegKey HKCU "Software\Classes\litecoin"
+  keep_litecoin_handler:
   DeleteRegKey HKCU "Software\${PRODUCT_NAME}"
   DeleteRegKey HKCU "${PRODUCT_UNINST_KEY}"
 SectionEnd

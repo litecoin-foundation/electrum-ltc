@@ -35,7 +35,7 @@ for f in $(ls *.exe); do
         -h sha256 \
         -certs "$CERT_FILE" \
         -key "$KEY_FILE" \
-        -n "Electrum" \
+        -n "Electrum-LTC" \
         -i "https://electrum-ltc.org/" \
         -t "http://timestamp.digicert.com/" \
         -in "$f" \
