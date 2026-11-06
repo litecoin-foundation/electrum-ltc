@@ -64,7 +64,12 @@ class Exception_Window(BaseCrashReporter, QWidget, MessageBoxMixin, Logger):
         main_box.addWidget(heading)
         main_box.addWidget(QLabel(BaseCrashReporter.CRASH_MESSAGE))
 
-        main_box.addWidget(QLabel(BaseCrashReporter.REQUEST_HELP_MESSAGE))
+        help_label = QLabel(BaseCrashReporter.REQUEST_HELP_MESSAGE if BaseCrashReporter.report_server else
+                            _("Please report this issue manually") +
+                            f' <a href="{constants.GIT_REPO_ISSUES_URL}">on GitHub</a>.')
+        help_label.setTextFormat(Qt.TextFormat.RichText)
+        help_label.setOpenExternalLinks(True)
+        main_box.addWidget(help_label)
 
         self._report_contents_dlg = None  # type: Optional[ReportContentsDialog]
         collapse_info = QPushButton(_("Show report contents"))
@@ -79,11 +84,13 @@ class Exception_Window(BaseCrashReporter, QWidget, MessageBoxMixin, Logger):
         self.description_textfield.setPlaceholderText(self.USER_COMMENT_PLACEHOLDER)
         main_box.addWidget(self.description_textfield)
 
-        main_box.addWidget(QLabel(BaseCrashReporter.ASK_CONFIRM_SEND))
+        if BaseCrashReporter.report_server:
+            main_box.addWidget(QLabel(BaseCrashReporter.ASK_CONFIRM_SEND))
 
         buttons = QHBoxLayout()
 
         report_button = QPushButton(_('Send Bug Report'))
+        report_button.setVisible(bool(BaseCrashReporter.report_server))
         report_button.clicked.connect(lambda _checked: self._ask_for_confirm_to_send_report())
         report_button.setIcon(read_QIcon("tab_send.png"))
         buttons.addWidget(report_button)
@@ -105,6 +112,9 @@ class Exception_Window(BaseCrashReporter, QWidget, MessageBoxMixin, Logger):
             self.send_report()
 
     def send_report(self):
+        if not BaseCrashReporter.report_server:
+            self.show_message(_("Online crash reporting is unavailable."))
+            return
         def on_success(response: CrashReportResponse):
             text = response.text
             if response.url:

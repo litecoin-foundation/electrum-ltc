@@ -52,7 +52,7 @@ class CrashReportResponse(NamedTuple):
 
 
 class BaseCrashReporter(Logger):
-    report_server = "https://crashhub.electrum-ltc.org"
+    report_server = None  # Online crash submission is unavailable.
     issue_template = """<h2>Traceback</h2>
 <pre>
 {traceback}
@@ -89,6 +89,8 @@ class BaseCrashReporter(Logger):
 
     def send_report(self, asyncio_loop, proxy: 'ProxySettings', *, timeout=None) -> CrashReportResponse:
         # FIXME the caller needs to catch generic "Exception", as this method does not have a well-defined API...
+        if not BaseCrashReporter.report_server:
+            raise Exception(_("Online crash reporting is unavailable."))
         bitcoinlike_genesis = constants.net.GENESIS[-4:] in [
             "bfe2",  # mainnet
             "29a0",  # testnet 4
@@ -126,6 +128,8 @@ class BaseCrashReporter(Logger):
         return ret
 
     async def do_post(self, proxy: 'ProxySettings', url, data) -> str:
+        if not BaseCrashReporter.report_server:
+            raise Exception(_("Online crash reporting is unavailable."))
         async with make_aiohttp_session(proxy) as session:
             async with session.post(url, data=data, raise_for_status=True) as resp:
                 return await resp.text()

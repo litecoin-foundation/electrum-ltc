@@ -16,7 +16,7 @@ from electrum.i18n import _
 from electrum.util import make_aiohttp_session
 from electrum.logging import Logger
 from electrum.network import Network
-from electrum._vendor.distutils.version import StrictVersion
+from electrum._vendor.distutils.version import LooseVersion
 
 
 class UpdateCheck(QDialog, Logger):
@@ -24,13 +24,12 @@ class UpdateCheck(QDialog, Logger):
     download_url = "https://electrum-ltc.org/#download"
 
     VERSION_ANNOUNCEMENT_SIGNING_KEYS = (
-        "13xjmVAB1EATPP8RshTE8S8sNwwSUM9p1P",  # ThomasV (since 3.3.4)
-        "1Nxgk6NTooV4qZsX5fdqQwrLjYcsQZAfTg",  # ghost43 (since 4.1.2)
+        "LWZzbv5SbiRRjBDL6dUYRdBX9Dp89RDZgG",  # Electrum-LTC release announcement key
     )
 
     def __init__(self, *, latest_version=None):
         QDialog.__init__(self)
-        self.setWindowTitle('Electrum - ' + _('Update Check'))
+        self.setWindowTitle('Electrum-LTC - ' + _('Update Check'))
         self.content = QVBoxLayout()
         self.content.setContentsMargins(*[10]*4)
 
@@ -78,7 +77,7 @@ class UpdateCheck(QDialog, Logger):
 
     @staticmethod
     def is_newer(latest_version):
-        return latest_version > StrictVersion(version.ELECTRUM_VERSION)
+        return latest_version > LooseVersion(version.ELECTRUM_VERSION)
 
     def update_view(self, latest_version=None):
         if latest_version:
@@ -134,7 +133,7 @@ class UpdateCheckThread(QThread, Logger):
                         break
                 else:
                     raise Exception('no valid signature for version announcement')
-                return StrictVersion(version_num.strip())
+                return LooseVersion(version_num.strip())
 
     def run(self):
         if not self.network:

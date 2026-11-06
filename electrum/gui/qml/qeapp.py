@@ -393,7 +393,9 @@ class QEAppController(BaseCrashReporter, QObject):
         return {
             'traceback': self.get_traceback_info(*self.exc_args),
             'extra': self.get_additional_info(),
-            'reportstring': self.get_report_string()
+            'reportstring': self.get_report_string(),
+            'reportAvailable': bool(BaseCrashReporter.report_server),
+            'issuesUrl': constants.GIT_REPO_ISSUES_URL,
         }
 
     @pyqtSlot(object, object, object)
@@ -403,6 +405,9 @@ class QEAppController(BaseCrashReporter, QObject):
 
     @pyqtSlot(str)
     def sendReport(self, user_text: str):
+        if not BaseCrashReporter.report_server:
+            self.sendingBugreportFailure.emit(_("Online crash reporting is unavailable."))
+            return
         self._crash_user_text = user_text
         network = Network.get_instance()
         proxy = network.proxy

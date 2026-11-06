@@ -46,7 +46,9 @@ ElDialog
         }
         Label {
             Layout.fillWidth: true
-            text: qsTr('To help us diagnose and fix the problem, you can send us a bug report that contains useful debug information:')
+            text: crashData.reportAvailable
+                ? qsTr('To help us diagnose and fix the problem, you can send us a bug report that contains useful debug information:')
+                : qsTr('Please report this issue manually on GitHub.')
             wrapMode: Text.Wrap
         }
         Button {
@@ -74,10 +76,12 @@ ElDialog
             }
         }
         Label {
+            visible: crashData.reportAvailable
             text: qsTr('Do you want to send this report?')
         }
         RowLayout {
             Button {
+                visible: crashData.reportAvailable
                 Layout.fillWidth: true
                 Layout.preferredWidth: 3
                 text: qsTr('Send Bug Report')
@@ -92,6 +96,11 @@ ElDialog
                     })
                     dialog.open()
                 }
+            }
+            Button {
+                visible: !crashData.reportAvailable
+                text: qsTr('Open GitHub')
+                onClicked: Qt.openUrlExternally(crashData.issuesUrl)
             }
             Button {
                 Layout.fillWidth: true
